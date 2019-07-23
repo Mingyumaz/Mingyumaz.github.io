@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="CN">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="MHRD Guide 解决方案@(Steam蒸汽动力)[MHRD|Game|How To] [CH]游戏解决方案1.解决方案将作为完整的代码呈现，部分结决方案将有理论分析或图解。 2.根据记录板判断，解决方案远非理想。 3.慎重考虑直接参考解决方案">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MHRD_Guide">
+<meta property="og:url" content="https://mingyumaz.github.io/2019/05/26/MHRD-Guide/index.html">
+<meta property="og:site_name" content="Himmel und du">
+<meta property="og:description" content="MHRD Guide 解决方案@(Steam蒸汽动力)[MHRD|Game|How To] [CH]游戏解决方案1.解决方案将作为完整的代码呈现，部分结决方案将有理论分析或图解。 2.根据记录板判断，解决方案远非理想。 3.慎重考虑直接参考解决方案">
+<meta property="og:locale" content="CN">
+<meta property="og:updated_time" content="2019-07-23T21:01:24.543Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MHRD_Guide">
+<meta name="twitter:description" content="MHRD Guide 解决方案@(Steam蒸汽动力)[MHRD|Game|How To] [CH]游戏解决方案1.解决方案将作为完整的代码呈现，部分结决方案将有理论分析或图解。 2.根据记录板判断，解决方案远非理想。 3.慎重考虑直接参考解决方案">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://mingyumaz.github.io/2019/05/26/MHRD-Guide/">
+
+
+
+
+
+  <title>MHRD_Guide | Himmel und du</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Himmel und du</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://mingyumaz.github.io/2019/05/26/MHRD-Guide/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Mingyu Ma">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Himmel und du">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">MHRD_Guide</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-05-26T11:12:45+02:00">
+                2019-05-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="MHRD-Guide-解决方案"><a href="#MHRD-Guide-解决方案" class="headerlink" title="MHRD Guide 解决方案"></a>MHRD Guide 解决方案</h1><p>@(Steam蒸汽动力)[MHRD|Game|How To]</p>
+<h1 id="CH-游戏解决方案"><a href="#CH-游戏解决方案" class="headerlink" title="[CH]游戏解决方案"></a>[CH]游戏解决方案</h1><p>1.解决方案将作为完整的代码呈现，部分结决方案将有理论分析或图解。</p>
+<p>2.根据记录板判断，解决方案远非理想。</p>
+<p>3.慎重考虑直接参考解决方案</p>
+<a id="more"></a>
+
+<p>附：我们欢迎错误/错别字。</p>
+<p>@[TOC]</p>
+<p>[DE]<br>1.Die Lösung wird als vollständiger Code präsentiert, und einige der Lösungen werden eine theoretische Analyse oder Illustration haben.</p>
+<p>2.Laut der Rekordbehörde ist die Lösung alles andere als ideal.</p>
+<p>3.Berücksichtigen Sie sorgfältig die direkte Referenzlösung.</p>
+<p>PS: Wir freuen uns über Fehler / Tippfehler.</p>
+<p>[RU]<br>1.Решение будет представлено в виде полного кода, а некоторые из решений будут иметь теоретический анализ или иллюстрацию.</p>
+<p>2.Согласно авторитету записи, решение далеко не идеальное.</p>
+<p>3.Внимательно рассмотрите прямое справочное решение.</p>
+<p>PS: Мы рады ошибкам / опечаткам.</p>
+<h1 id="Logic-Circuits"><a href="#Logic-Circuits" class="headerlink" title="Logic Circuits"></a>Logic Circuits</h1><blockquote>
+<p>NAND<br><strong>NAND, NAND4B, NAND16B</strong></p>
+</blockquote>
+<p>[CH]这个器件是直接给出的，所谓的开局一条狗（NAND），器件全靠连，任务全靠爆。<br>[CH]给我一个NAND，我就能复制成16bit的指令CPU。<br>[RU] Решены по умолчанию.<br>[ENG] Solved by default.</p>
+<h3 id="NOT"><a href="#NOT" class="headerlink" title="NOT"></a>NOT</h3><blockquote>
+<p>NOT<br><strong>NOT</strong></p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Parts: NAND NAND;</span><br><span class="line"></span><br><span class="line">Wires:</span><br><span class="line">  in -&gt; NAND.in1,</span><br><span class="line">  in -&gt; NAND.in2,</span><br><span class="line">  NAND.out -&gt; out</span><br><span class="line">;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>NOT4B<br><strong>NOT4B</strong></p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">Parts: NOT1 NOT, NOT2 NOT, NOT3 NOT, NOT4 NOT;</span><br><span class="line"></span><br><span class="line">Wires:</span><br><span class="line">  in[1] -&gt; NOT1.in,</span><br><span class="line">  in[2] -&gt; NOT2.in,</span><br><span class="line">  in[3] -&gt; NOT3.in,</span><br><span class="line">  in[4] -&gt; NOT4.in,</span><br><span class="line"></span><br><span class="line">  NOT1.out -&gt; out[1],</span><br><span class="line">  NOT2.out -&gt; out[2],</span><br><span class="line">  NOT3.out -&gt; out[3],</span><br><span class="line">  NOT4.out -&gt; out[4]</span><br><span class="line">;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>NOT16B<br>[CH]做完4bit NOT，16bit NOT自动就爆出来了。<br>[RU] Решен Тедом.<br>[ENG] Solved by Ted.</p>
+</blockquote>
+<h3 id="AnD"><a href="#AnD" class="headerlink" title="AnD"></a>AnD</h3><blockquote>
+<p>AND<br><strong>AND</strong></p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Parts: NAND NAND, NOT NOT;</span><br><span class="line"></span><br><span class="line">Wires:</span><br><span class="line">  in1 -&gt; NAND.in1,</span><br><span class="line">  in2 -&gt; NAND.in2,</span><br><span class="line">  NAND.out -&gt; NOT.in,</span><br><span class="line">  NOT.out -&gt; out</span><br><span class="line">;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>AND4B<br><strong>AND4B</strong></p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">Parts: AND1 AND, AND2 AND, AND3 AND, AND4 AND;</span><br><span class="line"></span><br><span class="line">Wires:</span><br><span class="line">  in1[1] -&gt; AND1.in1,</span><br><span class="line">  in1[2] -&gt; AND2.in1,</span><br><span class="line">  in1[3] -&gt; AND3.in1,</span><br><span class="line">  in1[4] -&gt; AND4.in1,</span><br><span class="line"></span><br><span class="line">  in2[1] -&gt; AND1.in2,</span><br><span class="line">  in2[2] -&gt; AND2.in2,</span><br><span class="line">  in2[3] -&gt; AND3.in2,</span><br><span class="line">  in2[4] -&gt; AND4.in2,</span><br><span class="line"></span><br><span class="line">  AND1.out -&gt; out[1],</span><br><span class="line">  AND2.out -&gt; out[2],</span><br><span class="line">  AND3.out -&gt; out[3],</span><br><span class="line">  AND4.out -&gt; out[4]</span><br><span class="line">;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>AND16B<br>[CH]做完4bit AND，16bit AND自动就爆出来了。<br>[RU] Решен Тедом.<br>[ENG] Solved by Ted.</p>
+</blockquote>
+<h3 id="OR"><a href="#OR" class="headerlink" title="OR"></a>OR</h3><blockquote>
+<p>OR<br><strong>OR</strong></p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Parts: NOT1 NOT, NOT2 NOT, NAND NAND;</span><br><span class="line"></span><br><span class="line">Wires:</span><br><span class="line">  in1 -&gt; NOT1.in,</span><br><span class="line">  in2 -&gt; NOT2.in,</span><br><span class="line">  NOT1.out -&gt; NAND.in1,</span><br><span class="line">  NOT2.out -&gt; NAND.in2,</span><br><span class="line">  NAND.out -&gt; out</span><br><span class="line">;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>OR4B<br>[CH]自动就爆出来了，懂我意思就行。<br>[RU] Решен Тедом.<br>[ENG] Solved by Ted.</p>
+</blockquote>
+<blockquote>
+<p>OR16B<br>[CH]自爆懂行。<br>[RU] Решен Тедом.<br>[ENG] Solved by Ted.</p>
+</blockquote>
+<blockquote>
+<p>OR4W<br><strong>OR4W</strong></p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">Parts: OR1 OR, OR2 OR, OR3 OR;</span><br><span class="line"></span><br><span class="line">Wires:</span><br><span class="line">  in[1] -&gt; OR1.in1,</span><br><span class="line">  in[2] -&gt; OR1.in2,</span><br><span class="line">  in[3] -&gt; OR2.in1,</span><br><span class="line">  in[4] -&gt; OR2.in2,</span><br><span class="line"></span><br><span class="line">  OR1.out -&gt; OR3.in1,</span><br><span class="line">  OR2.out -&gt; OR3.in2,</span><br><span class="line">  OR3.out -&gt; out</span><br><span class="line">;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>OR16W<br>[CH]自行。<br>[RU] Решен Тедом.<br>[ENG] Solved by Ted.</p>
+</blockquote>
+<blockquote>
+<p>XOR<br><strong>XOR</strong></p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Parts: NAND NAND, AND AND, OR OR;</span><br><span class="line"></span><br><span class="line">Wires:</span><br><span class="line">  in1 -&gt; NAND.in1,</span><br><span class="line">  in2 -&gt; NAND.in2,</span><br><span class="line">  in1 -&gt; OR.in1,</span><br><span class="line">  in2 -&gt; OR.in2,</span><br><span class="line">  NAND.out -&gt; AND.in1,</span><br><span class="line">  OR.out -&gt; AND.in2,</span><br><span class="line">  AND.out -&gt; out</span><br><span class="line">;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>XOR4B<br>[CH]自行。<br>[RU] Решен Тедом.<br>[ENG] Solved by Ted.</p>
+</blockquote>
+<blockquote>
+<p>XOR16B<br>[CH]自行。<br>[RU] Решен Тедом.<br>[ENG] Solved by Ted.</p>
+</blockquote>
+<blockquote>
+<p>OR4W<br><strong>OR4W</strong></p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">Parts: OR1 OR, OR2 OR, OR3 OR;</span><br><span class="line"></span><br><span class="line">Wires:</span><br><span class="line">  in[1] -&gt; OR1.in1,</span><br><span class="line">  in[2] -&gt; OR1.in2,</span><br><span class="line">  in[3] -&gt; OR2.in1,</span><br><span class="line">  in[4] -&gt; OR2.in2,</span><br><span class="line"></span><br><span class="line">  OR1.out -&gt; OR3.in1,</span><br><span class="line">  OR2.out -&gt; OR3.in2,</span><br><span class="line">  OR3.out -&gt; out</span><br><span class="line">;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>OR16W<br>[CH]。<br>[RU] Решен Тедом.<br>[ENG] Solved by Ted.</p>
+</blockquote>
+<blockquote>
+<p>XOR<br><strong>XOR</strong></p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Parts: NAND NAND, AND AND, OR OR;</span><br><span class="line"></span><br><span class="line">Wires:</span><br><span class="line">  in1 -&gt; NAND.in1,</span><br><span class="line">  in2 -&gt; NAND.in2,</span><br><span class="line">  in1 -&gt; OR.in1,</span><br><span class="line">  in2 -&gt; OR.in2,</span><br><span class="line">  NAND.out -&gt; AND.in1,</span><br><span class="line">  OR.out -&gt; AND.in2,</span><br><span class="line">  AND.out -&gt; out</span><br><span class="line">;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>XOR4B<br>[CH]<br>[RU] Решен Тедом.<br>[ENG] Solved by Ted.</p>
+</blockquote>
+<blockquote>
+<p>XOR16B<br>[CH]<br>[RU] Решен Тедом.<br>[ENG] Solved by Ted.</p>
+</blockquote>
+<h1 id="Advanced-Circuits"><a href="#Advanced-Circuits" class="headerlink" title="Advanced Circuits"></a>Advanced Circuits</h1><h3 id="MUX"><a href="#MUX" class="headerlink" title="MUX"></a>MUX</h3><blockquote>
+<p>MUX<br><strong>MUX</strong></p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">Parts: AND1 AND, AND2 AND, NOT NOT, OR OR;</span><br><span class="line"></span><br><span class="line">Wires:</span><br><span class="line">  sel -&gt; NOT.in,</span><br><span class="line">  NOT.out -&gt; AND1.in1,</span><br><span class="line">  in1 -&gt; AND1.in2,</span><br><span class="line">  sel -&gt; AND2.in1,</span><br><span class="line">  in2 -&gt; AND2.in2,</span><br><span class="line">  AND1.out -&gt; OR.in1,</span><br><span class="line">  AND2.out -&gt; OR.in2,</span><br><span class="line">  OR.out -&gt; out</span><br><span class="line">;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>MUX4B<br><strong>MUX4B</strong></p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">Parts: MUX1 MUX, MUX2 MUX, MUX3 MUX, MUX4 MUX;</span><br><span class="line"></span><br><span class="line">Wires:</span><br><span class="line">  in1[1] -&gt; MUX1.in1,</span><br><span class="line">  in2[1] -&gt; MUX1.in2,</span><br><span class="line">  sel -&gt; MUX1.sel,</span><br><span class="line">  MUX1.out -&gt; out[1],</span><br><span class="line"></span><br><span class="line">  in1[2] -&gt; MUX2.in1,</span><br><span class="line">  in2[2] -&gt; MUX2.in2,</span><br><span class="line">  sel -&gt; MUX2.sel,</span><br><span class="line">  MUX2.out -&gt; out[2],</span><br><span class="line"></span><br><span class="line">  in1[3] -&gt; MUX3.in1,</span><br><span class="line">  in2[3] -&gt; MUX3.in2,</span><br><span class="line">  sel -&gt; MUX3.sel,</span><br><span class="line">  MUX3.out -&gt; out[3],</span><br><span class="line"></span><br><span class="line">  in1[4] -&gt; MUX4.in1,</span><br><span class="line">  in2[4] -&gt; MUX4.in2,</span><br><span class="line">  sel -&gt; MUX4.sel,</span><br><span class="line">  MUX4.out -&gt; out[4]</span><br><span class="line">;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>MUX16B<br>[CH]<br>[RU] Решен Тедом.<br>[ENG] Solved by Ted.</p>
+</blockquote>
+<blockquote>
+<p>MUX4W16B<br>[CH]<br>[RU] Решен Тедом.<br>[ENG] Solved by Ted.</p>
+</blockquote>
+<h3 id="DEMUX"><a href="#DEMUX" class="headerlink" title="DEMUX"></a>DEMUX</h3><blockquote>
+<p>DEMUX<br><strong>DEMUX</strong></p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">Parts: AND1 AND, AND2 AND, NOT NOT;</span><br><span class="line"></span><br><span class="line">Wires:</span><br><span class="line">  sel -&gt; NOT.in,</span><br><span class="line">  NOT.out -&gt; AND1.in1,</span><br><span class="line">  in -&gt; AND1.in2,</span><br><span class="line">  AND1.out -&gt; out1,</span><br><span class="line"></span><br><span class="line">  sel -&gt; AND2.in1,</span><br><span class="line">  in -&gt; AND2.in2,</span><br><span class="line">  AND2.out -&gt; out2</span><br><span class="line">;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>DEMUX4W<br><strong>DEMUX4W</strong></p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">Parts: NOT1 NOT, NOT2 NOT,</span><br><span class="line">AND11 AND, AND12 AND, AND 21 AND, AND22 AND, AND31 AND, AND32 AND, AND41 AND, AND42 AND;</span><br><span class="line"></span><br><span class="line">Wires:</span><br><span class="line">  sel[1] -&gt; NOT1.in,</span><br><span class="line">  sel[2] -&gt; NOT2.in,</span><br><span class="line"></span><br><span class="line">  in -&gt; AND11.in1,</span><br><span class="line">  NOT1.out -&gt; AND11.in2,</span><br><span class="line">  AND11.out -&gt; AND12.in1,</span><br><span class="line">  NOT2.out -&gt; AND12.in2,</span><br><span class="line">  AND12.out -&gt; out1,</span><br><span class="line"></span><br><span class="line">  in -&gt; AND21.in1,</span><br><span class="line">  sel[1] -&gt; AND21.in2,</span><br><span class="line">  AND21.out -&gt; AND22.in1,</span><br><span class="line">  NOT2.out -&gt; AND22.in2,</span><br><span class="line">  AND22.out -&gt; out2,</span><br><span class="line"></span><br><span class="line">  in -&gt; AND31.in1,</span><br><span class="line">  NOT1.out -&gt; AND31.in2,</span><br><span class="line">  AND31.out -&gt; AND32.in1,</span><br><span class="line">  sel[2] -&gt; AND32.in2,</span><br><span class="line">  AND32.out -&gt; out3,</span><br><span class="line"></span><br><span class="line">  in -&gt; AND41.in1,</span><br><span class="line">  sel[1] -&gt; AND41.in2,</span><br><span class="line">  AND41.out -&gt; AND42.in1,</span><br><span class="line">  sel[2] -&gt; AND42.in2,</span><br><span class="line">  AND42.out -&gt; out4</span><br><span class="line">;</span><br></pre></td></tr></table></figure>
+
+<h3 id="ADDER"><a href="#ADDER" class="headerlink" title="ADDER"></a>ADDER</h3><blockquote>
+<p>ADDER</p>
+</blockquote>
+<p><strong>HALFADDER</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Parts: AND AND, XOR XOR;</span><br><span class="line"></span><br><span class="line">Wires:</span><br><span class="line">  in1 -&gt; AND.in1,</span><br><span class="line">  in2 -&gt; AND.in2,</span><br><span class="line">  AND.out -&gt; carry,</span><br><span class="line"></span><br><span class="line">  in1 -&gt; XOR.in1,</span><br><span class="line">  in2 -&gt; XOR.in2,</span><br><span class="line">  XOR.out -&gt; out</span><br><span class="line">;</span><br></pre></td></tr></table></figure>
+
+<p><strong>FULLADDER</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">Parts: OR OR, XOR1 XOR, XOR2 XOR, AND1 AND, AND2 AND;</span><br><span class="line"></span><br><span class="line">Wires:</span><br><span class="line">  in1 -&gt; XOR1.in1,</span><br><span class="line">  in2 -&gt; XOR1.in2,</span><br><span class="line">  XOR1.out -&gt; XOR2.in1,</span><br><span class="line">  carryIn -&gt; XOR2.in2,</span><br><span class="line">  XOR2.out -&gt; out,</span><br><span class="line"></span><br><span class="line">  in1 -&gt; AND1.in1,</span><br><span class="line">  in2 -&gt; AND1.in2,</span><br><span class="line">  XOR1.out -&gt; AND2.in1,</span><br><span class="line">  carryIn -&gt; AND2.in2,</span><br><span class="line">  AND1.out -&gt; OR.in1,</span><br><span class="line">  AND2.out -&gt; OR.in2,</span><br><span class="line">  OR.out -&gt; carryOut</span><br><span class="line">;</span><br></pre></td></tr></table></figure>
+
+<p><strong>ADDER4B</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">Parts: FAD1 FULLADDER, FAD2 FULLADDER, FAD3 FULLADDER, FAD4 FULLADDER;</span><br><span class="line"></span><br><span class="line">Wires:</span><br><span class="line">  in1[1] -&gt; FAD1.in1,</span><br><span class="line">  in2[1] -&gt; FAD1.in2,</span><br><span class="line">  carryIn -&gt; FAD1.carryIn,</span><br><span class="line">  FAD1.out -&gt; out[1],</span><br><span class="line"></span><br><span class="line">  in1[2] -&gt; FAD2.in1,</span><br><span class="line">  in2[2] -&gt; FAD2.in2,</span><br><span class="line">  FAD1.carryOut -&gt; FAD2.carryIn,</span><br><span class="line">  FAD2.out -&gt; out[2],</span><br><span class="line"></span><br><span class="line">  in1[3] -&gt; FAD3.in1,</span><br><span class="line">  in2[3] -&gt; FAD3.in2,</span><br><span class="line">  FAD2.carryOut -&gt; FAD3.carryIn,</span><br><span class="line">  FAD3.out -&gt; out[3],</span><br><span class="line"></span><br><span class="line">  in1[4] -&gt; FAD4.in1,</span><br><span class="line">  in2[4] -&gt; FAD4.in2,</span><br><span class="line">  FAD3.carryOut -&gt; FAD4.carryIn,</span><br><span class="line">  FAD4.out -&gt; out[4],</span><br><span class="line">  FAD4.carryOut -&gt; carryOut</span><br><span class="line">;</span><br></pre></td></tr></table></figure>
+
+<p><strong>ADDER16B</strong><br>[CH]<br>[RU] Решен Тедом.<br>[ENG] Solved by Ted.</p>
+<h3 id="ALU"><a href="#ALU" class="headerlink" title="ALU"></a>ALU</h3><blockquote>
+<p>ALU<br><strong>ALU4B</strong></p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">Parts: MUX1 MUX4B, MUX2 MUX4B, MUX3 MUX4B, MUX4 MUX4B,</span><br><span class="line">NOT1 NOT4B, NOT2 NOT4B, NOT3 NOT4B, ZERO NOT,</span><br><span class="line">NAND NAND4B, ADD ADDER4B, SET OR4W;</span><br><span class="line"></span><br><span class="line">Wires:</span><br><span class="line">  in1 -&gt; NOT1.in,</span><br><span class="line">  in2 -&gt; NOT2.in,</span><br><span class="line"></span><br><span class="line">  in1 -&gt; MUX4.in1,</span><br><span class="line">  NOT1.out -&gt; MUX4.in2,</span><br><span class="line">  opCode[4] -&gt; MUX4.sel,</span><br><span class="line">  in2 -&gt; MUX3.in1,</span><br><span class="line">  NOT2.out -&gt; MUX3.in2,</span><br><span class="line">  opCode[3] -&gt; MUX3.sel,</span><br><span class="line"></span><br><span class="line">  MUX4.out -&gt; ADD.in1,</span><br><span class="line">  MUX3.out -&gt; ADD.in2,</span><br><span class="line">  MUX4.out -&gt; NAND.in1,</span><br><span class="line">  MUX3.out -&gt; NAND.in2,</span><br><span class="line"></span><br><span class="line">  ADD.out -&gt; MUX2.in1,</span><br><span class="line">  NAND.out -&gt; MUX2.in2,</span><br><span class="line">  opCode[2] -&gt; MUX2.sel,</span><br><span class="line"></span><br><span class="line">  MUX2.out -&gt; NOT3.in,</span><br><span class="line">  MUX2.out -&gt; MUX1.in1,</span><br><span class="line">  NOT3.out -&gt; MUX1.in2,</span><br><span class="line">  opCode[1] -&gt; MUX1.sel,</span><br><span class="line"></span><br><span class="line">  MUX1.out -&gt; out,</span><br><span class="line">  MUX1.out[4] -&gt; negative,</span><br><span class="line">  MUX1.out -&gt; SET.in,</span><br><span class="line">  SET.out -&gt; ZERO.in,</span><br><span class="line">  ZERO.out -&gt; zero</span><br><span class="line">;</span><br></pre></td></tr></table></figure>
+
+<p><strong>ALU16B</strong><br>[CH]<br>[RU] Решен Тедом.<br>[ENG] Solved by Ted.</p>
+<h2 id="Memory"><a href="#Memory" class="headerlink" title="Memory"></a>Memory</h2><blockquote>
+<p><strong>Memory</strong></p>
+</blockquote>
+<h3 id="DFF"><a href="#DFF" class="headerlink" title="DFF"></a>DFF</h3><blockquote>
+<p>DFF<br><strong>DFF</strong><br>[CH]<br>[RU] Решен по умолчанию.<br>[ENG] Solved by default.</p>
+</blockquote>
+<h3 id="REGISTER"><a href="#REGISTER" class="headerlink" title="REGISTER"></a>REGISTER</h3><blockquote>
+<p>REGISTER<br><strong>REGISTER</strong></p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Parts: MUX MUX, DFF DFF;</span><br><span class="line"></span><br><span class="line">Wires:</span><br><span class="line">  in -&gt; MUX.in2,</span><br><span class="line">  load -&gt; MUX.sel,</span><br><span class="line">  MUX.out -&gt; DFF.in,</span><br><span class="line">  DFF.out -&gt; MUX.in1,</span><br><span class="line">  DFF.out -&gt; out</span><br><span class="line">;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>REGISTER4B<br><strong>REGISTER4B</strong></p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">Parts: REG1 REGISTER, REG2 REGISTER, REG3 REGISTER, REG4 REGISTER;</span><br><span class="line"></span><br><span class="line">Wires:</span><br><span class="line">  in[1] -&gt; REG1.in,</span><br><span class="line">  load -&gt; REG1.load,</span><br><span class="line">  REG1.out -&gt; out[1],</span><br><span class="line"></span><br><span class="line">  in[2] -&gt; REG2.in,</span><br><span class="line">  load -&gt; REG2.load,</span><br><span class="line">  REG2.out -&gt; out[2],</span><br><span class="line"></span><br><span class="line">  in[3] -&gt; REG3.in,</span><br><span class="line">  load -&gt; REG3.load,</span><br><span class="line">  REG3.out -&gt; out[3],</span><br><span class="line"></span><br><span class="line">  in[4] -&gt; REG4.in,</span><br><span class="line">  load -&gt; REG4.load,</span><br><span class="line">  REG4.out -&gt; out[4]</span><br><span class="line">;</span><br></pre></td></tr></table></figure>
+
+<p><strong>REGISTER16B</strong><br>[CH]<br>[RU] Решен Тедом.<br>[ENG] Solved by Ted.</p>
+<h3 id="RAM"><a href="#RAM" class="headerlink" title="RAM"></a>RAM</h3><blockquote>
+<p>RAM</p>
+</blockquote>
+<p><strong>RAM4W16B</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">Parts: REG1 REGISTER16B, REG2 REGISTER16B, REG3 REGISTER16B, REG4 REGISTER16B,</span><br><span class="line">DEMUX DEMUX4W, MUX MUX4W16B;</span><br><span class="line"></span><br><span class="line">Wires:</span><br><span class="line">  load -&gt; DEMUX.in,</span><br><span class="line">  address -&gt; DEMUX.sel,</span><br><span class="line">  DEMUX.out1 -&gt; REG1.load,</span><br><span class="line">  DEMUX.out2 -&gt; REG2.load,</span><br><span class="line">  DEMUX.out3 -&gt; REG3.load,</span><br><span class="line">  DEMUX.out4 -&gt; REG4.load,</span><br><span class="line"></span><br><span class="line">  in -&gt; REG1.in,</span><br><span class="line">  in -&gt; REG2.in,</span><br><span class="line">  in -&gt; REG3.in,</span><br><span class="line">  in -&gt; REG4.in,</span><br><span class="line"></span><br><span class="line">  REG1.out -&gt; MUX.in1,</span><br><span class="line">  REG2.out -&gt; MUX.in2,</span><br><span class="line">  REG3.out -&gt; MUX.in3,</span><br><span class="line">  REG4.out -&gt; MUX.in4,</span><br><span class="line">  address -&gt; MUX.sel,</span><br><span class="line">  MUX.out -&gt; out</span><br><span class="line">;</span><br></pre></td></tr></table></figure>
+
+<p><strong>RAM64KW16B</strong><br>[CH]<br>[RU] Решен Тедом.<br>[ENG] Solved by Ted.</p>
+<h2 id="COUNTER"><a href="#COUNTER" class="headerlink" title="COUNTER"></a>COUNTER</h2><blockquote>
+<p>COUNTER</p>
+</blockquote>
+<p><strong>COUNTER4B</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">Parts: LOAD MUX4B, RESET MUX4B, REG REGISTER4B, ADD ADDER4B;</span><br><span class="line"></span><br><span class="line">Wires:</span><br><span class="line">  REG.out -&gt; ADD.in1,</span><br><span class="line">  1 -&gt; ADD.in2[1],</span><br><span class="line">  ADD.out -&gt; LOAD.in1,</span><br><span class="line">  in -&gt; LOAD.in2,</span><br><span class="line">  load -&gt; LOAD.sel,</span><br><span class="line"></span><br><span class="line">  LOAD.out -&gt; RESET.in1,</span><br><span class="line">  0000 -&gt; RESET.in2,</span><br><span class="line">  reset -&gt; RESET.sel,</span><br><span class="line">  </span><br><span class="line">  RESET.out -&gt; REG.in,</span><br><span class="line">  1 -&gt; REG.load,</span><br><span class="line">  REG.out -&gt; out</span><br><span class="line">;</span><br></pre></td></tr></table></figure>
+
+<p><strong>COUNTER16B</strong><br>[CH]<br>[RU] Решен Тедом.<br>[ENG] Solved by Ted.</p>
+<h2 id="Decoder"><a href="#Decoder" class="headerlink" title="Decoder"></a>Decoder</h2><blockquote>
+<p>Decoder<br><strong>DECODER</strong></p>
+</blockquote>
+<p>[CH]来来，上专车。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">Parts: MUX1 MUX, MUX2 MUX, MUX3 MUX, MUX7 MUX, DEMUX DEMUX4W;</span><br><span class="line"></span><br><span class="line">Wires:</span><br><span class="line">  instr[16] -&gt; MUX1.sel,</span><br><span class="line">  instr[16] -&gt; MUX2.sel,</span><br><span class="line">  instr[16] -&gt; MUX3.sel,</span><br><span class="line">  instr[16] -&gt; MUX7.sel,</span><br><span class="line"></span><br><span class="line">  instr[6] -&gt; MUX7.in1,</span><br><span class="line">  1 -&gt; MUX2.in2,</span><br><span class="line"></span><br><span class="line">  instr[14:15] -&gt; DEMUX.sel,</span><br><span class="line">  1 -&gt; DEMUX.in,</span><br><span class="line">  DEMUX.out2 -&gt; MUX1.in1,</span><br><span class="line">  DEMUX.out3 -&gt; MUX2.in1,</span><br><span class="line">  DEMUX.out4 -&gt; MUX3.in1,</span><br><span class="line"></span><br><span class="line">  instr[16] -&gt; cToM,</span><br><span class="line">  MUX1.out -&gt; loadA,</span><br><span class="line">  MUX2.out -&gt; loadM,</span><br><span class="line">  MUX3.out -&gt; loadD,</span><br><span class="line">  instr[13] -&gt; op1,</span><br><span class="line">  instr[11:12] -&gt; op2,</span><br><span class="line">  instr[7:10] -&gt; opCode,</span><br><span class="line">  MUX7.out -&gt; jmpIfZ,</span><br><span class="line">  instr[1:15] -&gt; constant</span><br><span class="line">;</span><br></pre></td></tr></table></figure>
+
+<h1 id="CPU"><a href="#CPU" class="headerlink" title="CPU"></a>CPU</h1><blockquote>
+<p>CPU<br><strong>CPU</strong></p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">Parts: decoder DECODER, mReg REGISTER16B, aReg REGISTER16B, pc COUNTER16B,</span><br><span class="line">alu ALU16B, mrMUX MUX16B, aluMUX MUX16B, aluMUX4W MUX4W16B, pcAND AND;</span><br><span class="line"></span><br><span class="line">Wires:</span><br><span class="line">  instr -&gt; decoder.instr,</span><br><span class="line">  decoder.loadD -&gt; write,</span><br><span class="line"></span><br><span class="line">  decoder.opCode -&gt; alu.opCode,</span><br><span class="line">  decoder.op1 -&gt; aluMUX.sel,</span><br><span class="line">  aReg.out -&gt; aluMUX.in1,</span><br><span class="line">  decoder.constant[1:5] -&gt; aluMUX.in2[1:5],</span><br><span class="line">  aluMUX.out -&gt; alu.in1,</span><br><span class="line"></span><br><span class="line">  decoder.op2 -&gt; aluMUX4W.sel,</span><br><span class="line">  decoder.constant[1:5] -&gt; aluMUX4W.in1[1:5],</span><br><span class="line">  aRreg -&gt; aluMUX4W.in2,</span><br><span class="line">  mReg -&gt; aluMUX4W.in3,</span><br><span class="line">  data -&gt; aluMUX4W.in4,</span><br><span class="line">  aluMUX4W.out -&gt; alu.in2,</span><br><span class="line"></span><br><span class="line">  decoder.cToM -&gt; mrMUX.sel,</span><br><span class="line">  decoder.constant -&gt; mrMUX.in2[1:15],</span><br><span class="line">  alu.out -&gt; mrMUX.in1,</span><br><span class="line">  mrMUX.out -&gt; mReg.in,</span><br><span class="line">  decoder.loadM -&gt; mReg.load,</span><br><span class="line"></span><br><span class="line">  decoder.loadA -&gt; aReg.load,</span><br><span class="line">  alu.out -&gt; aReg.in,</span><br><span class="line"></span><br><span class="line">  alu.zero -&gt; pcAND.in1,</span><br><span class="line">  decoder.jmpIfZ -&gt; pcAND.in2,</span><br><span class="line">  pcAND.out -&gt; pc.load,</span><br><span class="line">  mReg,out -&gt; pc.in,</span><br><span class="line"></span><br><span class="line">  alu.out -&gt; result,</span><br><span class="line">  mReg.out -&gt; dataAddr,</span><br><span class="line">  pc.out -&gt; instrAddr,</span><br><span class="line">  reset -&gt; pc.reset</span><br><span class="line">;</span><br></pre></td></tr></table></figure>
+
+<h1 id="成就-Достижения-Achievements"><a href="#成就-Достижения-Achievements" class="headerlink" title="成就/Достижения/Achievements"></a>成就/Достижения/Achievements</h1><p>[CH]<br>所有成就都可以在游戏中获得，不需要任何特殊操作。</p>
+<p>[DE]<br>Alle Erfolge können während des Spiels erzielt werden und erfordern keine spezielle Manipulation.</p>
+<p>[RU]<br>Все достижения могут быть получены в процессе прохождения и не требуют каких-то специальных манипуляций.</p>
+<p>[ENG]<br>All achievements can be obtained during the game and don’t require any special manipulation.</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/05/26/MHRD/" rel="next" title="MHRD">
+                <i class="fa fa-chevron-left"></i> MHRD
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Mingyu Ma</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#MHRD-Guide-解决方案"><span class="nav-number">1.</span> <span class="nav-text">MHRD Guide 解决方案</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#CH-游戏解决方案"><span class="nav-number">2.</span> <span class="nav-text">[CH]游戏解决方案</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Logic-Circuits"><span class="nav-number">3.</span> <span class="nav-text">Logic Circuits</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#NOT"><span class="nav-number">3.0.1.</span> <span class="nav-text">NOT</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#AnD"><span class="nav-number">3.0.2.</span> <span class="nav-text">AnD</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#OR"><span class="nav-number">3.0.3.</span> <span class="nav-text">OR</span></a></li></ol></li></ol><li class="nav-item nav-level-1"><a class="nav-link" href="#Advanced-Circuits"><span class="nav-number">4.</span> <span class="nav-text">Advanced Circuits</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#MUX"><span class="nav-number">4.0.1.</span> <span class="nav-text">MUX</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DEMUX"><span class="nav-number">4.0.2.</span> <span class="nav-text">DEMUX</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ADDER"><span class="nav-number">4.0.3.</span> <span class="nav-text">ADDER</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ALU"><span class="nav-number">4.0.4.</span> <span class="nav-text">ALU</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Memory"><span class="nav-number">4.1.</span> <span class="nav-text">Memory</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#DFF"><span class="nav-number">4.1.1.</span> <span class="nav-text">DFF</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#REGISTER"><span class="nav-number">4.1.2.</span> <span class="nav-text">REGISTER</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RAM"><span class="nav-number">4.1.3.</span> <span class="nav-text">RAM</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#COUNTER"><span class="nav-number">4.2.</span> <span class="nav-text">COUNTER</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Decoder"><span class="nav-number">4.3.</span> <span class="nav-text">Decoder</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#CPU"><span class="nav-number">5.</span> <span class="nav-text">CPU</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#成就-Достижения-Achievements"><span class="nav-number">6.</span> <span class="nav-text">成就/Достижения/Achievements</span></a></li></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Mingyu Ma</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
