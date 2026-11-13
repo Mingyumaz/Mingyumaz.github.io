@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Roadmap · P4sim</title>
+  <meta name="description" content="Where P4sim is heading: the releases of the ns-3 module for BMv2 P4 switches, from v1.0 to the switch-centric v2.0.">
+  <meta name="author" content="Mingyu Ma">
+  <link rel="canonical" href="https://mingyumaz.github.io/p4sim/roadmap/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Roadmap · P4sim">
+  <meta property="og:description" content="Released, in progress and planned features of P4sim, release by release.">
+  <meta property="og:url" content="https://mingyumaz.github.io/p4sim/roadmap/">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <script>
+    try {
+      var t = localStorage.getItem("p4sim-theme");
+      if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+    } catch (e) {}
+  </script>
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="../" aria-label="P4sim home">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="8"/><path d="M8 11h6M8 16h10M8 21h6"/><circle cx="23" cy="11" r="2"/><circle cx="23" cy="21" r="2"/></svg>
+      <span>P4sim</span>
+    </a>
+    <nav class="topnav" aria-label="Pages">
+      <a href="../">Overview</a>
+      <a href="../#start">Get started</a>
+      <a href="../#examples">Examples</a>
+      <a href="./" aria-current="page">Roadmap</a>
+      <a href="../#papers">Publications</a>
+    </nav>
+    <div class="topbar-actions">
+      <a class="icon-btn" href="https://github.com/HapCommSys/p4sim" aria-label="P4sim on GitHub" title="P4sim on GitHub">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      </a>
+      <button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
+        <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>
+        <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.5A8.5 8.5 0 019.5 3.5a8.5 8.5 0 1011 11z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+<section class="hero hero-sm">
+  <div class="wrap narrow">
+    <p class="eyebrow">Roadmap</p>
+    <h1>Where P4sim is heading</h1>
+    <p class="lead">P4sim grows release by release. Each release below lists its main features; the <a href="https://github.com/HapCommSys/p4sim/issues">issues</a> and <a href="https://github.com/HapCommSys/p4sim/pulls?q=is%3Apr">pull requests</a> on GitHub have the details.</p>
+    <ul class="legend" aria-label="Status legend">
+      <li><span class="status st-done">Released</span></li>
+      <li><span class="status st-progress">In progress</span></li>
+      <li><span class="status st-planned">Planned</span></li>
+      <li><span class="status st-ideas">Ideas</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="section section-tight">
+  <div class="wrap narrow">
+    <ol class="timeline">
+
+      <li class="release done" id="v1-0">
+        <span class="release-dot" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M3.5 8.5l3 3 6-7"/></svg></span>
+        <article class="release-card">
+          <div class="release-head">
+            <span class="release-ver">v1.0</span>
+            <span class="status st-done">Released</span>
+            <span class="release-when">June 2025</span>
+          </div>
+          <h2>First public release</h2>
+          <ul>
+            <li>BMv2 P4 switches inside ns-3, with the <strong>V1model</strong>, <strong>PSA</strong> and <strong>PNA</strong> architectures.</li>
+            <li>Bridge-based switch design (Arch 1): each port is an ns-3 CSMA or point-to-point device.</li>
+            <li>Examples and topology helpers, from tunnels and a firewall to spine-leaf and fat-tree networks.</li>
+            <li>Described in the ICNS3 2025 paper, with a reproducibility artifact.</li>
+          </ul>
+          <p class="release-links"><a href="https://github.com/HapCommSys/p4sim/releases/tag/v1.0.0">Release v1.0.0</a> · <a href="https://github.com/HapCommSys/p4sim-artifact-icns3">Artifact</a></p>
+        </article>
+      </li>
+
+      <li class="release progress" id="v1-1">
+        <span class="release-dot" aria-hidden="true"></span>
+        <article class="release-card">
+          <div class="release-head">
+            <span class="release-ver">v1.1</span>
+            <span class="status st-progress">In progress</span>
+            <span class="release-when">mostly on main</span>
+          </div>
+          <h2>Stability and control plane</h2>
+          <ul>
+            <li><strong>Runtime control plane:</strong> <code>P4Controller</code> manages table entries, action profiles and more while a simulation runs (GSoC 2025).</li>
+            <li><strong>Fixes:</strong> PNA forwards packets, switch cores are released cleanly, broken examples work again.</li>
+            <li><strong>Testing:</strong> seven test suites, packet tests on all three architectures, and smoke tests for the examples.</li>
+            <li><strong>V1model like simple_switch:</strong> priority queues done; resubmit, recirculate, clone and digest in progress.</li>
+            <li><strong>Faster, parallel runs:</strong> configurable BMv2 log level and automatic Thrift ports.</li>
+          </ul>
+          <p class="release-links"><a href="https://github.com/HapCommSys/p4sim/compare/v1.0.0...main">Changes on main since v1.0.0</a></p>
+        </article>
+      </li>
+
+      <li class="release progress" id="v1-2">
+        <span class="release-dot" aria-hidden="true"></span>
+        <article class="release-card">
+          <div class="release-head">
+            <span class="release-ver">v1.2</span>
+            <span class="status st-progress">In progress</span>
+          </div>
+          <h2>Newer ns-3</h2>
+          <ul>
+            <li><strong>ns-3.49 (C++23)</strong>, maintained next to the ns-3.39 line.</li>
+            <li>BMv2's C++20 build fix sent upstream, so installation needs no manual header patch.</li>
+            <li>Easier builds, without hard-coded library paths.</li>
+          </ul>
+          <p class="release-links"><a href="https://github.com/HapCommSys/p4sim/tree/ns-3.49">ns-3.49 branch</a></p>
+        </article>
+      </li>
+
+      <li class="release planned" id="v2-0">
+        <span class="release-dot" aria-hidden="true"></span>
+        <article class="release-card">
+          <div class="release-head">
+            <span class="release-ver">v2.0</span>
+            <span class="status st-planned">Planned</span>
+          </div>
+          <h2>Switch-centric architecture</h2>
+          <ul>
+            <li><strong>Arch 2:</strong> ports belong to the switch and connect through a switched Ethernet channel.</li>
+            <li><strong>Traffic manager:</strong> virtual output queues, priority scheduling and event-driven egress.</li>
+            <li>A <strong>queue timing model</strong>.</li>
+            <li>Automatic processing rate, with no idle polling.</li>
+          </ul>
+          <p class="release-links"><a href="https://github.com/HapCommSys/p4sim/tree/switch_channel">switch_channel branch</a> (in development)</p>
+        </article>
+      </li>
+
+      <li class="release ideas" id="later">
+        <span class="release-dot" aria-hidden="true"></span>
+        <article class="release-card">
+          <div class="release-head">
+            <span class="release-ver">Later</span>
+            <span class="status st-ideas">Ideas</span>
+          </div>
+          <h2>Under consideration</h2>
+          <ul>
+            <li>Per-table counters and richer tracing.</li>
+            <li>Faster simulations, for example with the BMv2 log off by default.</li>
+            <li>More example scenarios.</li>
+          </ul>
+        </article>
+      </li>
+
+    </ol>
+
+    <aside class="card road-cta">
+      <h3>Need a feature?</h3>
+      <p>Plans change with what users need. Tell us in an issue, or send a pull request.</p>
+      <div class="cta cta-tight">
+        <a class="btn btn-small btn-primary" href="https://github.com/HapCommSys/p4sim/issues/new">Suggest a feature</a>
+        <a class="btn btn-small" href="https://github.com/HapCommSys/p4sim/releases">All releases</a>
+      </div>
+    </aside>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <p>P4sim is open source under the <a href="https://github.com/HapCommSys/p4sim/blob/main/LICENSE">Apache License 2.0</a>. Developed at <a href="https://github.com/HapCommSys">HapCommSys</a>, TU Dresden.</p>
+    <p><a href="../">P4sim overview</a> · <a href="/">Mingyu Ma's homepage</a></p>
+  </div>
+</footer>
+
+<script src="../assets/main.js" defer></script>
+</body>
+</html>

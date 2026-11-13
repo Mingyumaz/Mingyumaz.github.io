@@ -1,0 +1,617 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>P4sim · P4 programmable switches in ns-3</title>
+  <meta name="description" content="P4sim is an ns-3 module that runs BMv2 P4 switches inside ns-3 network simulations: V1model, PSA and PNA, BMv2 programs and flow tables unchanged, open source under Apache 2.0.">
+  <meta name="author" content="Mingyu Ma">
+  <link rel="canonical" href="https://mingyumaz.github.io/p4sim/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="P4sim · P4 programmable switches in ns-3">
+  <meta property="og:description" content="Run real P4 programs on BMv2 switches inside ns-3 simulations.">
+  <meta property="og:url" content="https://mingyumaz.github.io/p4sim/">
+  <meta property="og:image" content="https://mingyumaz.github.io/p4sim/assets/p4sim-arch.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <script>
+    try {
+      var t = localStorage.getItem("p4sim-theme");
+      if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+    } catch (e) {}
+  </script>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="#top" aria-label="P4sim home">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="8"/><path d="M8 11h6M8 16h10M8 21h6"/><circle cx="23" cy="11" r="2"/><circle cx="23" cy="21" r="2"/></svg>
+      <span>P4sim</span>
+    </a>
+    <nav class="topnav" aria-label="Sections">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#start">Get started</a>
+      <a href="#examples">Examples</a>
+      <a href="roadmap/">Roadmap</a>
+      <a href="#papers">Publications</a>
+    </nav>
+    <div class="topbar-actions">
+      <a class="icon-btn" href="https://github.com/HapCommSys/p4sim" aria-label="P4sim on GitHub" title="P4sim on GitHub">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      </a>
+      <button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
+        <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>
+        <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.5A8.5 8.5 0 019.5 3.5a8.5 8.5 0 1011 11z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- ============================== HERO ============================== -->
+<section class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <p class="eyebrow">ns-3 module · BMv2 inside</p>
+      <h1>Run real P4 programs inside <span class="nw">ns-3</span> simulations</h1>
+      <p class="lead">
+        P4sim embeds the <a href="https://github.com/p4lang/behavioral-model">BMv2</a> behavioral model in the
+        <a class="nw" href="https://www.nsnam.org/">ns-3</a> network simulator. The P4 programs and flow tables you run on
+        <code>simple_switch</code> forward packets in repeatable, end-to-end network simulations, while <span class="nw">ns-3</span> handles
+        the topology, links, traffic and time.
+      </p>
+
+      <div class="cta">
+        <a class="btn btn-primary" href="#start">Get started</a>
+        <a class="btn" href="https://github.com/HapCommSys/p4sim">View on GitHub</a>
+        <a class="btn btn-ghost" href="#papers">Read the paper</a>
+      </div>
+      <ul class="facts" aria-label="Key facts">
+        <li>Apache 2.0</li>
+        <li>ns-3.39</li>
+        <li>V1model · PSA · PNA</li>
+        <li><a href="https://github.com/HapCommSys/p4sim/releases">Release v1.0.0</a></li>
+        <li>ICNS3 2025</li>
+      </ul>
+    </div>
+
+    <figure class="hero-figure">
+      <svg class="pipeline" viewBox="0 0 480 380" role="img" aria-labelledby="pipe-title pipe-desc">
+        <title id="pipe-title">How a packet crosses a P4sim switch</title>
+        <desc id="pipe-desc">Inside an ns-3 simulation, a packet from Host A enters port 0 of a P4SwitchNetDevice. It runs through the parser, ingress, queues, egress and deparser, then leaves port 1 to Host B. The control plane programs the tables through the BMv2 runtime API.</desc>
+        <rect class="d-frame" x="1" y="1" width="478" height="378" rx="14"/>
+        <text class="d-mono d-muted" x="16" y="364">ns-3 simulation: topology · links · traffic · time</text>
+
+        <rect class="d-ctrl" x="140" y="18" width="300" height="48" rx="10"/>
+        <text class="d-label" x="156" y="38">Control plane</text>
+        <text class="d-mono d-muted" x="156" y="56">flowtable_*.txt · P4Controller</text>
+        <path class="d-arrow" d="M290 66 V100"/>
+        <path class="d-arrow-head" d="M285 94 L290 102 L295 94"/>
+        <text class="d-mono d-muted" x="298" y="88">runtime API</text>
+
+        <rect class="d-switch" x="100" y="104" width="360" height="176" rx="12"/>
+        <text class="d-title" x="116" y="130">P4SwitchNetDevice</text>
+        <rect class="d-pill" x="392" y="115" width="54" height="22" rx="11"/>
+        <text class="d-pill-text" x="419" y="130" text-anchor="middle">BMv2</text>
+
+        <g class="d-stages">
+          <rect x="114" y="150" width="60" height="64" rx="8"/>
+          <rect x="182" y="150" width="60" height="64" rx="8"/>
+          <rect class="d-tm" x="250" y="150" width="60" height="64" rx="8"/>
+          <rect x="318" y="150" width="60" height="64" rx="8"/>
+          <rect x="386" y="150" width="60" height="64" rx="8"/>
+        </g>
+        <g class="d-stage-text" text-anchor="middle">
+          <text x="144" y="202">Parser</text>
+          <text x="212" y="202">Ingress</text>
+          <text x="280" y="202">Queues</text>
+          <text x="348" y="202">Egress</text>
+          <text x="416" y="202">Deparser</text>
+        </g>
+        <text class="d-mono d-muted" x="280" y="246" text-anchor="middle">match-action pipeline + traffic manager</text>
+        <text class="d-mono d-muted" x="280" y="264" text-anchor="middle">(V1model shown; PSA and PNA too)</text>
+
+        <rect class="d-host" x="14" y="150" width="66" height="44" rx="8"/>
+        <text class="d-label" x="47" y="177" text-anchor="middle">Host A</text>
+        <path class="d-link" d="M80 172 H94"/>
+        <rect class="d-port" x="94" y="162" width="12" height="20" rx="3"/>
+
+        <rect class="d-port" x="406" y="274" width="20" height="12" rx="3"/>
+        <path class="d-link" d="M416 286 V312"/>
+        <rect class="d-host" x="383" y="312" width="66" height="44" rx="8"/>
+        <text class="d-label" x="416" y="339" text-anchor="middle">Host B</text>
+
+        <g class="d-packets" aria-hidden="true">
+          <rect class="d-pkt" x="-7" y="-5" width="14" height="10" rx="3">
+            <animateMotion dur="4.5s" repeatCount="indefinite" path="M47 172 H416 V334"/>
+          </rect>
+          <rect class="d-pkt" x="-7" y="-5" width="14" height="10" rx="3" visibility="hidden">
+            <set attributeName="visibility" to="visible" begin="1.5s"/>
+            <animateMotion dur="4.5s" begin="1.5s" repeatCount="indefinite" path="M47 172 H416 V334"/>
+          </rect>
+          <rect class="d-pkt" x="-7" y="-5" width="14" height="10" rx="3" visibility="hidden">
+            <set attributeName="visibility" to="visible" begin="3s"/>
+            <animateMotion dur="4.5s" begin="3s" repeatCount="indefinite" path="M47 172 H416 V334"/>
+          </rect>
+        </g>
+      </svg>
+    </figure>
+  </div>
+</section>
+
+<!-- ============================== FEATURES ============================== -->
+<section class="section" id="features">
+  <div class="wrap">
+    <p class="eyebrow">Features</p>
+    <h2>Programmable data planes, simulated end to end</h2>
+    <p class="section-lead">P4sim couples a P4 packet processing engine with ns-3's network models, so you can study P4 programs in realistic topologies and traffic, at a scale a testbed rarely allows.</p>
+
+    <div class="cards cards-3">
+      <article class="card">
+        <h3>BMv2 runs every packet</h3>
+        <p>Packets pass through the BMv2 pipeline, the reference behavioral model used across the P4 community, so forwarding follows the same semantics as <code>simple_switch</code>.</p>
+      </article>
+      <article class="card">
+        <h3>Bring your BMv2 programs</h3>
+        <p>Compiled P4 JSON from <code>p4c</code> and runtime CLI flow tables (<code>table_add …</code>) load without changes. Several examples are adapted from the <a href="https://github.com/p4lang/tutorials">p4lang tutorials</a>.</p>
+      </article>
+      <article class="card">
+        <h3>Three P4 architectures</h3>
+        <p>Select V1model, PSA or PNA per switch with one attribute. Each maps to its BMv2 target: <code>simple_switch</code>, <code>psa_switch</code> or <code>pna_nic</code>.</p>
+      </article>
+      <article class="card">
+        <h3>ns-3 does the rest</h3>
+        <p>Topology, CSMA or point-to-point links, applications, timing, pcap traces and logging all come from ns-3. Combine P4 switches with any other ns-3 module.</p>
+      </article>
+      <article class="card">
+        <h3>Runtime control</h3>
+        <p><code>P4Controller</code> adds, modifies and deletes table entries, default actions and action profiles while the simulation runs, through the BMv2 runtime API.</p>
+      </article>
+      <article class="card">
+        <h3>Switch-level knobs</h3>
+        <p>Set the processing rate, queue buffers and BMv2 log level per switch. Thrift ports are picked automatically, so several simulations can run in parallel.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== HOW IT WORKS ============================== -->
+<section class="section section-alt" id="how">
+  <div class="wrap">
+    <p class="eyebrow">How it works</p>
+    <h2>A P4 switch as an ns-3 NetDevice</h2>
+    <div class="split">
+      <div>
+        <p>P4sim adds <code>P4SwitchNetDevice</code>, which takes the place of the standard ns-3 bridge. At start-up each switch loads a compiled P4 JSON program and a flow-table file.</p>
+        <p>A packet that arrives on a switch port is handed to the BMv2 core, linked in as a shared library. BMv2 parses it and runs the ingress match-action tables. The packet then waits in the switch's egress queues, which ns-3 events serve at the configured processing rate. BMv2 runs the egress pipeline and the deparser, and ns-3 sends the packet out of the chosen port.</p>
+        <p>The control plane uses BMv2's own interfaces. Flow-table files in runtime CLI syntax are applied at start-up, and <code>P4Controller</code> calls the BMv2 runtime API while the simulation runs.</p>
+      </div>
+      <div class="arch-cards">
+        <article class="card card-tight">
+          <p class="tag tag-ok">main · stable</p>
+          <h3>Arch 1: bridge-based</h3>
+          <p>Each switch port is an ordinary ns-3 NetDevice (CSMA or point-to-point). Flexible: the switch can connect to any device.</p>
+        </article>
+        <article class="card card-tight">
+          <p class="tag tag-dev">switch_channel · in development</p>
+          <h3>Arch 2: switch-centric</h3>
+          <p>Ports are internal parts of <code>P4SwitchNetDevice</code>, joined by a switched Ethernet channel. Finer control over port behaviour, closer to real programmable switches. May contain breaking changes.</p>
+        </article>
+      </div>
+    </div>
+
+    <figure class="figure">
+      <a href="assets/p4sim-arch.png"><img src="assets/p4sim-arch.png" width="1960" height="1040" loading="lazy" alt="Two P4sim architectures. Left, Arch 1 on the main branch: a P4SwitchNetDevice with control plane interface and P4SwitchCore, whose four ports are separate CSMA or P2P NetDevices attached through a bridge channel. Right, Arch 2 on the switch_channel branch: the four ports are part of the P4SwitchNetDevice and hosts attach through a switch Ethernet channel."></a>
+      <figcaption>Arch 1 (main) and Arch 2 (switch_channel). Click to enlarge.</figcaption>
+    </figure>
+
+    <h3 class="sub">Supported P4 architectures</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th><code>P4SwitchArch</code></th><th>Architecture</th><th>BMv2 target</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td><code>0</code></td><td>V1model</td><td><code>simple_switch</code></td><td><code>p4-v1model-ipv4-forwarding</code></td></tr>
+          <tr><td><code>1</code></td><td>PSA</td><td><code>psa_switch</code></td><td><code>p4-psa-ipv4-forwarding</code></td></tr>
+          <tr><td><code>2</code></td><td>PNA</td><td><code>pna_nic</code></td><td><code>p4-pna-ipv4-forwarding</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== GET STARTED ============================== -->
+<section class="section" id="start">
+  <div class="wrap">
+    <p class="eyebrow">Get started</p>
+    <h2>Install and run your first example</h2>
+    <p class="section-lead">Tested on Ubuntu 24.04 LTS with ns-3.39. Installing BMv2 and the P4 tools takes 1–2 hours and up to 15 GB of disk space. The <a href="https://github.com/HapCommSys/p4sim/blob/main/doc/vm-env.md">full guide</a> also covers virtual machines and older ns-3 versions.</p>
+
+    <ol class="steps">
+      <li class="step">
+        <div class="step-head"><span class="step-n">1</span><h3>Install BMv2 and the P4 tools</h3></div>
+        <p>Use the install script of the official <a href="https://github.com/p4lang/tutorials">p4lang/tutorials</a> repository.</p>
+<pre class="code"><code><span class="tok-k">sudo</span> apt update &amp;&amp; <span class="tok-k">sudo</span> apt install git vim cmake
+<span class="tok-k">cd</span> ~ &amp;&amp; git clone https://github.com/p4lang/tutorials
+<span class="tok-k">mkdir</span> ~/src &amp;&amp; <span class="tok-k">cd</span> ~/src
+../tutorials/vm-ubuntu-24.04/install.sh |&amp; tee log.txt
+simple_switch --version   <span class="tok-c"># check the installation</span></code></pre>
+      </li>
+      <li class="step">
+        <div class="step-head"><span class="step-n">2</span><h3>Get ns-3.39 and add P4sim</h3></div>
+        <p>P4sim is an ns-3 <code>contrib</code> module. The script registers BMv2 with <code>pkg-config</code>.</p>
+<pre class="code"><code><span class="tok-k">mkdir</span> -p ~/workdir &amp;&amp; <span class="tok-k">cd</span> ~/workdir
+git clone https://github.com/nsnam/ns-3-dev-git.git ns3.39
+<span class="tok-k">cd</span> ns3.39 &amp;&amp; git checkout ns-3.39
+<span class="tok-k">cd</span> contrib &amp;&amp; git clone https://github.com/HapCommSys/p4sim.git
+<span class="tok-k">cd</span> p4sim &amp;&amp; <span class="tok-k">sudo</span> ./set_pkg_config_env.sh</code></pre>
+      </li>
+      <li class="step">
+        <div class="step-head"><span class="step-n">3</span><h3>Build and set <code>P4SIM_DIR</code></h3></div>
+        <p>Examples find their P4 programs, flow tables and topologies through <code>P4SIM_DIR</code>.</p>
+<pre class="code"><code><span class="tok-k">cd</span> ~/workdir/ns3.39
+./ns3 configure --enable-tests --enable-examples
+./ns3 build
+<span class="tok-k">echo</span> <span class="tok-s">'export P4SIM_DIR="$HOME/workdir/ns3.39/contrib/p4sim"'</span> &gt;&gt; ~/.bashrc
+<span class="tok-k">source</span> ~/.bashrc</code></pre>
+      </li>
+      <li class="step">
+        <div class="step-head"><span class="step-n">4</span><h3>Run an example</h3></div>
+        <p>Two hosts, one V1model switch. Turning the BMv2 log off makes larger runs much faster.</p>
+<pre class="code"><code>./ns3 run p4-v1model-ipv4-forwarding
+./ns3 run <span class="tok-s">"p4-basic-example --ns3::P4SwitchNetDevice::BmLogLevel=off"</span>
+./test.py -s p4sim   <span class="tok-c"># run a test suite</span></code></pre>
+      </li>
+    </ol>
+
+    <aside class="note">
+      <strong>Why ns-3.39?</strong> From ns-3.40 on, ns-3 requires C++20, while BMv2 is built with C++17. P4sim therefore supports ns-3.39 and earlier.
+    </aside>
+  </div>
+</section>
+
+<!-- ============================== FIRST SIMULATION ============================== -->
+<section class="section section-alt" id="workflow">
+  <div class="wrap">
+    <p class="eyebrow">Workflow</p>
+    <h2>From a P4 program to a simulation</h2>
+    <div class="split split-wide">
+      <ol class="flow">
+        <li><strong>Write the P4 program.</strong> Headers, parser, match-action tables and control flow.</li>
+        <li><strong>Compile it with <code>p4c</code>.</strong> <code>p4c-bm2-ss</code>, <code>p4c-bm2-psa</code> or <code>p4c-bm2-pna</code> produce the JSON pipeline.</li>
+        <li><strong>Write the ns-3 script.</strong> Build the topology and install P4 switches on the switch nodes.</li>
+        <li><strong>Configure the control plane.</strong> Flow-table files at start-up, <code>P4Controller</code> during the run.</li>
+        <li><strong>Run and observe.</strong> Throughput, latency, pcap traces and logs from ns-3.</li>
+      </ol>
+
+      <div class="tabs" data-tabs>
+        <div class="tab-list" role="tablist" aria-label="Example files">
+          <button role="tab" id="tab-cc" aria-controls="panel-cc" aria-selected="true">simulation.cc</button>
+          <button role="tab" id="tab-ft" aria-controls="panel-ft" aria-selected="false" tabindex="-1">flowtable_0.txt</button>
+          <button role="tab" id="tab-topo" aria-controls="panel-topo" aria-selected="false" tabindex="-1">topo.txt</button>
+        </div>
+<div class="tab-panel" role="tabpanel" id="panel-cc" aria-labelledby="tab-cc">
+<pre class="code"><code><span class="tok-k">#include</span> <span class="tok-s">"ns3/p4-helper.h"</span>
+<span class="tok-k">#include</span> <span class="tok-s">"ns3/format-utils.h"</span>  <span class="tok-c">// GetP4ExamplePath()</span>
+
+std::string dir = <span class="tok-f">GetP4ExamplePath</span>() + <span class="tok-s">"/simple_v1model"</span>;
+
+P4Helper p4;
+p4.<span class="tok-f">SetDeviceAttribute</span>(<span class="tok-s">"JsonPath"</span>,
+    <span class="tok-f">StringValue</span>(dir + <span class="tok-s">"/simple_v1model.json"</span>));
+p4.<span class="tok-f">SetDeviceAttribute</span>(<span class="tok-s">"FlowTablePath"</span>,
+    <span class="tok-f">StringValue</span>(dir + <span class="tok-s">"/flowtable_0.txt"</span>));
+<span class="tok-c">// 0 = V1model, 1 = PSA, 2 = PNA</span>
+p4.<span class="tok-f">SetDeviceAttribute</span>(<span class="tok-s">"P4SwitchArch"</span>, <span class="tok-f">UintegerValue</span>(<span class="tok-n">0</span>));
+<span class="tok-c">// processing rate in packets per second</span>
+p4.<span class="tok-f">SetDeviceAttribute</span>(<span class="tok-s">"SwitchRate"</span>, <span class="tok-f">UintegerValue</span>(<span class="tok-n">10000</span>));
+
+<span class="tok-c">// ports: the switch node's CSMA or P2P NetDevices</span>
+p4.<span class="tok-f">Install</span>(switchNode, ports);</code></pre>
+</div>
+<div class="tab-panel" role="tabpanel" id="panel-ft" aria-labelledby="tab-ft" hidden>
+<pre class="code"><code><span class="tok-c"># BMv2 runtime CLI syntax, as for simple_switch_CLI</span>
+<span class="tok-k">table_set_default</span> ipv4_nhop drop
+<span class="tok-k">table_set_default</span> arp_simple drop
+<span class="tok-k">table_add</span> ipv4_nhop ipv4_forward <span class="tok-n">0x0a010101</span> =&gt; 00:00:00:00:00:01 <span class="tok-n">0x0</span>
+<span class="tok-k">table_add</span> arp_simple set_arp_nhop <span class="tok-n">0x0a010101</span> =&gt; <span class="tok-n">0x0</span>
+<span class="tok-k">table_add</span> ipv4_nhop ipv4_forward <span class="tok-n">0x0a010102</span> =&gt; 00:00:00:00:00:03 <span class="tok-n">0x1</span>
+<span class="tok-k">table_add</span> arp_simple set_arp_nhop <span class="tok-n">0x0a010102</span> =&gt; <span class="tok-n">0x1</span></code></pre>
+</div>
+<div class="tab-panel" role="tabpanel" id="panel-topo" aria-labelledby="tab-topo" hidden>
+<pre class="code"><code><span class="tok-c"># read by P4TopologyReaderHelper</span>
+<span class="tok-c"># hosts  switches  links</span>
+<span class="tok-n">1 2 2</span>
+<span class="tok-c"># host 1 and host 2 connect to switch 0</span>
+1 h 0 s 1000Mbps 0.1ms
+2 h 0 s 1000Mbps 0.1ms</code></pre>
+</div>
+        <p class="tab-foot">From <a href="https://github.com/HapCommSys/p4sim/blob/main/examples/p4-v1model-ipv4-forwarding.cc"><code>p4-v1model-ipv4-forwarding</code></a>, shortened.</p>
+      </div>
+    </div>
+
+    <h3 class="sub">Switch attributes</h3>
+    <p class="muted-p">Forwarding is defined by the P4 program and its flow tables. These attributes of <code>ns3::P4SwitchNetDevice</code> control the simulation side.</p>
+    <div class="table-wrap">
+      <table class="attr-table stack">
+        <thead><tr><th>Attribute</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>JsonPath</code></td><td>Path to the compiled P4 JSON file</td></tr>
+          <tr><td><code>FlowTablePath</code></td><td>Path to the flow-table file</td></tr>
+          <tr><td><code>P4SwitchArch</code></td><td>Architecture: 0 = V1model, 1 = PSA, 2 = PNA</td></tr>
+          <tr><td><code>ChannelType</code></td><td>Channel type: 0 = CSMA, 1 = point-to-point</td></tr>
+          <tr><td><code>SwitchRate</code></td><td>Processing rate in packets per second</td></tr>
+          <tr><td><code>QueueBufferSize</code></td><td>Total queue buffer size, in packets</td></tr>
+          <tr><td><code>InputBufferSizeLow</code></td><td>Input buffer for low-priority (external) packets</td></tr>
+          <tr><td><code>InputBufferSizeHigh</code></td><td>Input buffer for high-priority (internal) packets</td></tr>
+          <tr><td><code>EnableTracing</code></td><td>Basic throughput tracing</td></tr>
+          <tr><td><code>EnableSwap</code></td><td>Swap the P4 configuration at run time</td></tr>
+          <tr><td><code>BmLogLevel</code></td><td>BMv2 pipeline log level, from <code>trace</code> (default) to <code>off</code>; <code>off</code> speeds up the simulation</td></tr>
+          <tr><td><code>ThriftPort</code></td><td>Thrift port for the runtime CLI; <code>0</code> (default) picks a free port from 9090 up</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== EXAMPLES ============================== -->
+<section class="section" id="examples">
+  <div class="wrap">
+    <p class="eyebrow">Examples</p>
+    <h2>Sixteen ready-to-run scenarios</h2>
+    <p class="section-lead">Each example is an ns-3 script plus a <code>p4src/</code> folder with the P4 source, compiled JSON, flow tables and topology. Run any of them with <code>./ns3 run &lt;name&gt;</code>.</p>
+
+    <div class="filters" role="group" aria-label="Filter examples">
+      <button type="button" class="chip" data-filter="all" aria-pressed="true">All</button>
+      <button type="button" class="chip" data-filter="basics" aria-pressed="false">Forwarding</button>
+      <button type="button" class="chip" data-filter="headers" aria-pressed="false">Custom headers</button>
+      <button type="button" class="chip" data-filter="topo" aria-pressed="false">Topologies</button>
+      <button type="button" class="chip" data-filter="control" aria-pressed="false">Control plane</button>
+      <button type="button" class="chip" data-filter="qos" aria-pressed="false">Telemetry &amp; QoS</button>
+    </div>
+
+    <div class="examples" id="example-grid">
+      <a class="ex" data-cat="basics" href="https://github.com/HapCommSys/p4sim/blob/main/examples/p4-v1model-ipv4-forwarding.cc">
+        <span class="ex-name">p4-v1model-ipv4-forwarding</span>
+        <span class="ex-desc">IPv4 forwarding: 2 hosts, 1 switch.</span>
+        <span class="ex-tags"><span class="arch">V1model</span></span>
+      </a>
+      <a class="ex" data-cat="basics" href="https://github.com/HapCommSys/p4sim/blob/main/examples/p4-psa-ipv4-forwarding.cc">
+        <span class="ex-name">p4-psa-ipv4-forwarding</span>
+        <span class="ex-desc">The same scenario on the Portable Switch Architecture.</span>
+        <span class="ex-tags"><span class="arch arch-psa">PSA</span></span>
+      </a>
+      <a class="ex" data-cat="basics" href="https://github.com/HapCommSys/p4sim/blob/main/examples/p4-pna-ipv4-forwarding.cc">
+        <span class="ex-name">p4-pna-ipv4-forwarding</span>
+        <span class="ex-desc">The same scenario with a PNA NIC between two hosts.</span>
+        <span class="ex-tags"><span class="arch arch-pna">PNA</span></span>
+      </a>
+      <a class="ex" data-cat="basics" href="https://github.com/HapCommSys/p4sim/blob/main/examples/p4-basic-example.cc">
+        <span class="ex-name">p4-basic-example</span>
+        <span class="ex-desc">IPv4 forwarding in a 4-switch mesh with 4 hosts.</span>
+        <span class="ex-tags"><span class="arch">V1model</span><span class="src">p4lang tutorials</span></span>
+      </a>
+      <a class="ex" data-cat="basics" href="https://github.com/HapCommSys/p4sim/blob/main/examples/p4-l3-router.cc">
+        <span class="ex-name">p4-l3-router</span>
+        <span class="ex-desc">L3 forwarding across 3 routers in a line.</span>
+        <span class="ex-tags"><span class="arch">V1model</span></span>
+      </a>
+      <a class="ex" data-cat="basics" href="https://github.com/HapCommSys/p4sim/blob/main/examples/p4-calc.cc">
+        <span class="ex-name">p4-calc</span>
+        <span class="ex-desc">A calculator protocol answered by the switch itself.</span>
+        <span class="ex-tags"><span class="arch">V1model</span></span>
+      </a>
+      <a class="ex" data-cat="headers" href="https://github.com/HapCommSys/p4sim/blob/main/examples/p4-basic-tunnel.cc">
+        <span class="ex-name">p4-basic-tunnel</span>
+        <span class="ex-desc">Tunnelling with a custom header across 3 switches.</span>
+        <span class="ex-tags"><span class="arch">V1model</span><span class="src">p4lang tutorials</span></span>
+      </a>
+      <a class="ex" data-cat="headers" href="https://github.com/HapCommSys/p4sim/blob/main/examples/p4-source-routing.cc">
+        <span class="ex-name">p4-source-routing</span>
+        <span class="ex-desc">Source routing: the path travels in a custom header.</span>
+        <span class="ex-tags"><span class="arch">V1model</span></span>
+      </a>
+      <a class="ex" data-cat="topo" href="https://github.com/HapCommSys/p4sim/blob/main/examples/p4-spine-leaf-topo.cc">
+        <span class="ex-name">p4-spine-leaf-topo</span>
+        <span class="ex-desc">Spine-leaf network with ECMP load balancing over the spines.</span>
+        <span class="ex-tags"><span class="arch">V1model</span><span class="src">p4lang tutorials</span></span>
+      </a>
+      <a class="ex" data-cat="topo" href="https://github.com/HapCommSys/p4sim/blob/main/examples/p4-topo-fattree.cc">
+        <span class="ex-name">p4-topo-fattree</span>
+        <span class="ex-desc">Auto-generated k-ary fat-tree with P4 switches.</span>
+        <span class="ex-tags"><span class="arch">V1model</span></span>
+      </a>
+      <a class="ex" data-cat="topo" href="https://github.com/HapCommSys/p4sim/blob/main/examples/p4-ipv4-animation.cc">
+        <span class="ex-name">p4-ipv4-animation</span>
+        <span class="ex-desc">IPv4 forwarding with a NetAnim visualisation.</span>
+        <span class="ex-tags"><span class="arch">V1model</span></span>
+      </a>
+      <a class="ex" data-cat="control" href="https://github.com/HapCommSys/p4sim/blob/main/examples/p4-basic-controller.cc">
+        <span class="ex-name">p4-basic-controller</span>
+        <span class="ex-desc">A controller updates flow tables during the run.</span>
+        <span class="ex-tags"><span class="arch">V1model</span></span>
+      </a>
+      <a class="ex" data-cat="control" href="https://github.com/HapCommSys/p4sim/blob/main/examples/p4-controller-action-profile.cc">
+        <span class="ex-name">p4-controller-action-profile</span>
+        <span class="ex-desc">Controller with action profiles: members and groups.</span>
+        <span class="ex-tags"><span class="arch">V1model</span></span>
+      </a>
+      <a class="ex" data-cat="topo" href="https://github.com/HapCommSys/p4sim/blob/main/examples/p4-firewall.cc">
+        <span class="ex-name">p4-firewall</span>
+        <span class="ex-desc">The firewall exercise topology: 4 switches, internal and external hosts.</span>
+        <span class="ex-tags"><span class="arch">V1model</span><span class="src">p4lang tutorials</span></span>
+      </a>
+      <a class="ex" data-cat="qos" href="https://github.com/HapCommSys/p4sim/blob/main/examples/p4-link-monitoring.cc">
+        <span class="ex-name">p4-link-monitoring</span>
+        <span class="ex-desc">In-band probes measure link utilisation.</span>
+        <span class="ex-tags"><span class="arch">V1model</span></span>
+      </a>
+      <a class="ex" data-cat="qos" href="https://github.com/HapCommSys/p4sim/blob/main/examples/p4-queue-test.cc">
+        <span class="ex-name">p4-queue-test</span>
+        <span class="ex-desc">QoS-aware queuing with priorities.</span>
+        <span class="ex-tags"><span class="arch">V1model</span></span>
+      </a>
+    </div>
+    <p class="muted-p center">Results of the paper's experiments: <a href="https://github.com/HapCommSys/p4sim-artifact-icns3">p4sim-artifact-icns3</a>. New examples are welcome as pull requests.</p>
+  </div>
+</section>
+
+<!-- ============================== TESTING & SCOPE ============================== -->
+<section class="section section-alt" id="testing">
+  <div class="wrap">
+    <div class="split">
+      <div>
+        <p class="eyebrow">Testing</p>
+        <h2>Seven test suites</h2>
+        <p>Run them with <code>./test.py -s &lt;suite&gt;</code>. The example smoke tests in <code>examples-to-run.py</code> keep the examples from breaking unnoticed.</p>
+        <div class="table-wrap">
+          <table class="stack">
+            <thead><tr><th>Suite</th><th>Checks</th></tr></thead>
+            <tbody>
+              <tr><td><code>p4-packet</code></td><td>Frames in and out of a switch on V1model, PSA and PNA</td></tr>
+              <tr><td><code>p4sim</code></td><td>Program loading, Thrift ports, <code>BmLogLevel</code></td></tr>
+              <tr><td><code>p4-controller</code></td><td>Flow entries and action profiles, read back</td></tr>
+              <tr><td><code>p4-queue</code></td><td>Capacity, rate, FIFO order, priorities</td></tr>
+              <tr><td><code>p4-p2p-channel</code></td><td>The P4 point-to-point channel</td></tr>
+              <tr><td><code>p4-topology-reader</code></td><td>Reading topology files</td></tr>
+              <tr><td><code>format-utils</code></td><td>Conversion and path helpers</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <p class="eyebrow">Packet tests</p>
+        <h3 class="h2-like">Write a test as frames in, frames out</h3>
+        <p><code>p4-packet</code> reads a subset of p4c's STF format: send a frame into a port, expect frames on the others. <code>*</code> matches any nibble.</p>
+<pre class="code"><code><span class="tok-c"># send this frame into port 0</span>
+<span class="tok-k">packet</span> <span class="tok-n">0</span> 0000000000fe 000000000010 0800 ...
+<span class="tok-c"># expect this frame to leave port 1</span>
+<span class="tok-k">expect</span> <span class="tok-n">1</span> 000000000011 0000000000fe 0800 ...</code></pre>
+        <p class="eyebrow eyebrow-gap">Scope</p>
+        <ul class="plain">
+          <li>P4sim simulates <strong>functional</strong> behaviour: it reproduces P4 forwarding logic, not ASIC-level timing.</li>
+          <li><code>SwitchRate</code> is set by hand per switch; an unsuitable value wastes CPU time on idle polling.</li>
+          <li>With a CSMA channel, the P4 program has to handle ARP itself.</li>
+          <li>Tracing is basic (throughput); per-table counters are not exported yet.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== ROADMAP ============================== -->
+<section class="section" id="roadmap">
+  <div class="wrap">
+    <p class="eyebrow">Roadmap</p>
+    <h2>Where P4sim is heading</h2>
+    <p class="section-lead">From stabilising the current design to a switch-centric architecture with a traffic manager.</p>
+    <div class="road-grid">
+      <a class="road" href="roadmap/#v1-0">
+        <span class="road-ver">v1.0</span>
+        <span class="status st-done">Released</span>
+        <span class="road-title">First public release</span>
+        <span class="road-desc">V1model, PSA and PNA switches in ns-3; bridge-based design.</span>
+      </a>
+      <a class="road" href="roadmap/#v1-1">
+        <span class="road-ver">v1.1</span>
+        <span class="status st-progress">In progress</span>
+        <span class="road-title">Stability and control plane</span>
+        <span class="road-desc">Runtime controller, fixes, a full test suite.</span>
+      </a>
+      <a class="road" href="roadmap/#v1-2">
+        <span class="road-ver">v1.2</span>
+        <span class="status st-progress">In progress</span>
+        <span class="road-title">Newer ns-3</span>
+        <span class="road-desc">ns-3.49 with C++23, next to the ns-3.39 line.</span>
+      </a>
+      <a class="road" href="roadmap/#v2-0">
+        <span class="road-ver">v2.0</span>
+        <span class="status st-planned">Planned</span>
+        <span class="road-title">Switch-centric architecture</span>
+        <span class="road-desc">Switch-owned ports, traffic manager, queue timing.</span>
+      </a>
+    </div>
+    <a class="btn" href="roadmap/">See the full roadmap</a>
+  </div>
+</section>
+
+<!-- ============================== PUBLICATIONS ============================== -->
+<section class="section section-alt" id="papers">
+  <div class="wrap">
+    <p class="eyebrow">Publications</p>
+    <h2>Cite P4sim</h2>
+
+    <article class="paper">
+      <div class="paper-body">
+        <p class="venue">ICNS3 2025 · Proceedings of the 2025 International Conference on ns-3 · ACM</p>
+        <h3>P4sim: Simulating Programmable Switches in ns-3</h3>
+        <p class="authors">Mingyu Ma, Giang T. Nguyen</p>
+        <div class="paper-links">
+          <a class="btn btn-small btn-primary" href="https://doi.org/10.1145/3747204.3747210">ACM DL</a>
+          <a class="btn btn-small" href="https://arxiv.org/abs/2503.17554">arXiv</a>
+          <a class="btn btn-small" href="https://github.com/HapCommSys/p4sim-artifact-icns3">Artifact</a>
+        </div>
+        <p class="muted-p small">The arXiv preprint appeared as “P4sim: Programming Protocol-independent Packet Processors in ns-3”.</p>
+      </div>
+      <div class="bib">
+        <div class="bib-head"><span>BibTeX</span></div>
+<pre class="code code-bib"><code>@inproceedings{ma2025p4sim,
+  title     = {P4sim: Simulating Programmable Switches in ns-3},
+  author    = {Ma, Mingyu and Nguyen, Giang T.},
+  booktitle = {Proceedings of the 2025 International Conference on ns-3},
+  series    = {ICNS3 2025},
+  pages     = {107--115},
+  year      = {2025},
+  publisher = {ACM},
+  doi       = {10.1145/3747204.3747210}
+}</code></pre>
+      </div>
+    </article>
+
+    <h3 class="sub">Builds on</h3>
+    <ul class="refs">
+      <li>Jiasong Bai, Jun Bi, Peng Kuang, Chengze Fan, Yu Zhou, Cheng Zhang. <em>NS4: Enabling programmable data plane simulation.</em> ACM SOSR 2018. <a href="https://dl.acm.org/doi/abs/10.1145/3185467.3185470">ACM DL</a></li>
+      <li>Chengze Fan, Jun Bi, Yu Zhou, Cheng Zhang, Haisu Yu. <em>NS4: A P4-driven network simulator.</em> SIGCOMM Posters and Demos 2017. <a href="https://dl.acm.org/doi/10.1145/3123878.3132002">ACM DL</a></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================== PEOPLE ============================== -->
+<section class="section" id="people">
+  <div class="wrap">
+    <div class="people">
+      <div>
+        <p class="eyebrow">People</p>
+        <h2>Maintainers and contributors</h2>
+        <p><strong>Maintainer:</strong> <a href="https://github.com/Mingyumaz">Mingyu Ma</a>, TU Dresden.</p>
+        <p><strong>Contributors:</strong> developed further in <a href="https://github.com/p4lang/gsoc/blob/main/2025/ideas_list.md#project-5">Google Summer of Code 2025</a> with P4.org, with support from Davide and contributions from <a href="https://github.com/Vineet1101">Vineet</a>, and from <a href="https://github.com/HapCommSys/p4sim/graphs/contributors">everyone on GitHub</a>.</p>
+      </div>
+      <div class="contribute card">
+        <h3>Contribute</h3>
+        <p>Bug reports, new examples and pull requests are welcome.</p>
+        <div class="cta cta-tight">
+          <a class="btn btn-small btn-primary" href="https://github.com/HapCommSys/p4sim/issues">Open an issue</a>
+          <a class="btn btn-small" href="https://github.com/HapCommSys/p4sim/pulls">Pull requests</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <p>P4sim is open source under the <a href="https://github.com/HapCommSys/p4sim/blob/main/LICENSE">Apache License 2.0</a>. Developed at <a href="https://github.com/HapCommSys">HapCommSys</a>, TU Dresden.</p>
+    <p><a href="roadmap/">Roadmap</a> · <a href="/">Mingyu Ma's homepage</a></p>
+  </div>
+</footer>
+
+<script src="assets/main.js" defer></script>
+</body>
+</html>
