@@ -1,0 +1,775 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inside the switch · P4sim</title>
+  <meta name="description" content="Animated walkthroughs of a P4sim switch: how a BMv2 P4 switch sits in ns-3, how a packet moves through the pipeline, how the priority queues and the scheduler decide which packet leaves next, and how custom headers travel.">
+  <meta name="author" content="Mingyu Ma">
+  <link rel="canonical" href="https://mingyumaz.github.io/p4sim/inside/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Inside the switch · P4sim">
+  <meta property="og:description" content="How a P4sim switch works, in four animated walkthroughs and a live queue model.">
+  <meta property="og:url" content="https://mingyumaz.github.io/p4sim/inside/">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <script>
+    document.documentElement.classList.add("js");
+    try {
+      var t = localStorage.getItem("p4sim-theme");
+      if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+    } catch (e) {}
+  </script>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="../assets/inside.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="../" aria-label="P4sim home">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="8"/><path d="M8 11h6M8 16h10M8 21h6"/><circle cx="23" cy="11" r="2"/><circle cx="23" cy="21" r="2"/></svg>
+      <span>P4sim</span>
+    </a>
+    <nav class="topnav" aria-label="Pages">
+      <a href="../">Overview</a>
+      <a href="./" aria-current="page">Inside the switch</a>
+      <a href="../#start">Get started</a>
+      <a href="../#examples">Examples</a>
+      <a href="../roadmap/">Roadmap</a>
+    </nav>
+    <div class="topbar-actions">
+      <a class="icon-btn" href="https://github.com/HapCommSys/p4sim" aria-label="P4sim on GitHub" title="P4sim on GitHub">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      </a>
+      <button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
+        <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>
+        <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.5A8.5 8.5 0 019.5 3.5a8.5 8.5 0 1011 11z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+<section class="hero hero-sm">
+  <div class="wrap">
+    <p class="eyebrow">Inside the switch</p>
+    <h1>How a P4sim switch works</h1>
+    <p class="lead">Four animated walkthroughs, drawn from the P4sim design figures and checked against its code: where the switch sits in <span class="nw">ns-3</span>, how a packet travels through the pipeline, how the queues and the scheduler decide which packet leaves next, and how custom headers cross the network. Each one plays by itself; click a step to jump to it.</p>
+    <ol class="chapter-links">
+      <li><a href="#ch1"><span>01</span>The switch in <span class="nw">ns-3</span></a></li>
+      <li><a href="#ch2"><span>02</span>Through the pipeline</a></li>
+      <li><a href="#ch3"><span>03</span>Queues and scheduling</a></li>
+      <li><a href="#ch4"><span>04</span>Custom headers</a></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============================== CHAPTER 1 ============================== -->
+<section class="section chapter" id="ch1">
+  <div class="wrap">
+    <p class="eyebrow">Chapter 1 · Switch model</p>
+    <h2>A P4 switch inside <span class="nw">ns-3</span></h2>
+    <p class="section-lead">A control plane programs the tables; the data plane runs every packet through the P4 program.</p>
+
+    <div class="player" data-player="switch">
+      <div class="player-stage">
+        <div class="stage">
+          <svg viewBox="0 0 760 440" role="img" aria-labelledby="s1-title s1-desc">
+            <title id="s1-title">A P4 switch in ns-3</title>
+            <desc id="s1-desc">A P4SwitchNetDevice with four ports. The P4 controller sends a rule through the control-plane interface into the match-action table. Host 1 sends a packet into port 0; the parser extracts its headers, the table matches the destination and sends it out of port 3 to Host 2.</desc>
+
+            <!-- links and wires -->
+            <path class="wire" d="M194 400 H294 V350"/>
+            <path id="s1-link2" class="wire" d="M654 350 V376"/>
+            <path id="s1-ctrlwire" class="wire" d="M174 57 H198 Q212 57 212 71 V86 Q212 100 226 100 H230"/>
+            <path id="s1-ctrlmsg" class="wire dash" d="M560 122 V196"/>
+            <path id="s1-w-in" class="wire" d="M294 318 V274"/>
+            <path id="s1-w-mid" class="wire" d="M364 235 H380"/>
+            <path id="s1-w-out" class="wire" d="M654 274 V318"/>
+
+            <!-- controller -->
+            <rect id="s1-ctrl" class="box" x="24" y="28" width="150" height="58" rx="10"/>
+            <text class="t-label" x="99" y="53" text-anchor="middle">P4 controller</text>
+            <text class="t-sub" x="99" y="71" text-anchor="middle">flow tables · API</text>
+
+            <!-- switch -->
+            <rect id="s1-switch" class="box shell" x="210" y="16" width="526" height="318" rx="16"/>
+            <text class="t-title" x="230" y="42">P4SwitchNetDevice</text>
+            <text class="t-sub" x="716" y="42" text-anchor="end">an ns-3 NetDevice</text>
+            <text class="t-tag" x="230" y="66">CONTROL PLANE</text>
+            <rect id="s1-thrift" class="box alt" x="230" y="74" width="486" height="48" rx="9"/>
+            <text class="t-label" x="246" y="94">Control-plane interface</text>
+            <text class="t-sub" x="246" y="111">Thrift · runtime CLI · P4Controller</text>
+            <text id="s1-cmd" class="t-sub t-violet fx" x="704" y="103" text-anchor="end">table_add ipv4_nhop 10.1.1.2 → port 3</text>
+            <path class="divider" d="M226 138 H720"/>
+            <text class="t-tag" x="230" y="156">PROGRAMMABLE DATA PLANE</text>
+            <rect id="s1-core" class="box alt" x="230" y="164" width="486" height="124" rx="12"/>
+            <text class="t-label" x="246" y="184">P4SwitchCore</text>
+            <text class="t-sub" x="342" y="184">BMv2 · V1model / PSA / PNA</text>
+
+            <rect id="s1-parser" class="box" x="246" y="196" width="118" height="78" rx="9"/>
+            <text class="t-label" x="305" y="222" text-anchor="middle">Parser</text>
+            <text id="s1-parser-sub" class="t-sub" x="305" y="258" text-anchor="middle">bytes → fields</text>
+
+            <rect id="s1-table" class="box" x="380" y="196" width="320" height="78" rx="9"/>
+            <text class="t-sub" x="394" y="212">table ipv4_nhop · match ipv4.dst</text>
+            <rect id="s1-row1" class="row-bg" x="388" y="219" width="304" height="15" rx="3"/>
+            <text class="t-row" x="396" y="230">10.1.1.1  →  ipv4_forward(port 0)</text>
+            <g id="s1-row2g" class="fx">
+              <rect id="s1-row2" class="row-bg" x="388" y="236" width="304" height="15" rx="3"/>
+              <text class="t-row" x="396" y="247">10.1.1.2  →  ipv4_forward(port 3)</text>
+            </g>
+            <text id="s1-hit" class="t-hit fx" x="686" y="247" text-anchor="end">✓ hit</text>
+            <text class="t-row t-dim" x="396" y="264">default  →  drop</text>
+
+            <g class="ports">
+              <rect id="s1-p0" class="box port" x="262" y="318" width="64" height="32" rx="7"/>
+              <text class="t-port" x="294" y="338" text-anchor="middle">Port 0</text>
+              <rect id="s1-p1" class="box port" x="382" y="318" width="64" height="32" rx="7"/>
+              <text class="t-port" x="414" y="338" text-anchor="middle">Port 1</text>
+              <rect id="s1-p2" class="box port" x="502" y="318" width="64" height="32" rx="7"/>
+              <text class="t-port" x="534" y="338" text-anchor="middle">Port 2</text>
+              <rect id="s1-p3" class="box port" x="622" y="318" width="64" height="32" rx="7"/>
+              <text class="t-port" x="654" y="338" text-anchor="middle">Port 3</text>
+            </g>
+
+            <rect id="s1-h1" class="box" x="24" y="376" width="170" height="48" rx="10"/>
+            <text class="t-label" x="109" y="396" text-anchor="middle">Host 1</text>
+            <text class="t-sub" x="109" y="413" text-anchor="middle">sender · 10.1.1.1</text>
+            <rect id="s1-h2" class="box" x="566" y="376" width="170" height="48" rx="10"/>
+            <text class="t-label" x="651" y="396" text-anchor="middle">Host 2</text>
+            <text id="s1-h2-sub" class="t-sub" x="651" y="413" text-anchor="middle">receiver · 10.1.1.2</text>
+
+            <!-- motion paths (invisible) -->
+            <path id="s1-p-ctrl" class="mpath" d="M174 57 H198 Q212 57 212 71 V86 Q212 100 226 100 H560 V243"/>
+            <path id="s1-p-in" class="mpath" d="M150 400 H294 V235"/>
+            <path id="s1-p-mid" class="mpath" d="M294 235 H520 L540 243 H628"/>
+            <path id="s1-p-out" class="mpath" d="M628 243 H654 V392"/>
+
+            <!-- moving things -->
+            <g id="s1-msg" class="mover"><rect class="msg" x="-10" y="-7" width="20" height="14" rx="4"/></g>
+            <g id="s1-pkt" class="mover">
+              <rect class="pkt-shell" x="-21" y="-9" width="42" height="18" rx="5"/>
+              <rect class="seg seg-eth" x="-18" y="-6" width="10" height="12" rx="2"/>
+              <rect class="seg seg-ip" x="-6" y="-6" width="10" height="12" rx="2"/>
+              <rect class="seg seg-pay" x="6" y="-6" width="12" height="12" rx="2"/>
+            </g>
+          </svg>
+        </div>
+        <div class="stage-caption" aria-live="polite"></div>
+        <div class="controls"></div>
+      </div>
+
+      <ol class="steps">
+        <li class="step-item">
+          <button type="button" class="step-title"><span class="n">01</span>A P4 switch is an ns-3 NetDevice</button>
+          <p><code>P4SwitchNetDevice</code> is installed on an ns-3 node like any other device. Its ports are the node's CSMA or point-to-point devices, so hosts and other switches attach over ordinary ns-3 links.</p>
+        </li>
+        <li class="step-item">
+          <button type="button" class="step-title"><span class="n">02</span>The control plane fills the tables</button>
+          <p>Rules arrive through the control-plane interface: runtime CLI commands over Thrift at start-up, or <code>P4Controller</code> calls during the run. Here a rule sends 10.1.1.2 to port 3.</p>
+        </li>
+        <li class="step-item">
+          <button type="button" class="step-title"><span class="n">03</span>A packet arrives on port 0</button>
+          <p>Host 1 sends a packet to 10.1.1.2. The switch hands it to its BMv2 core, whose parser splits the bytes into header fields.</p>
+        </li>
+        <li class="step-item">
+          <button type="button" class="step-title"><span class="n">04</span>Match, then act</button>
+          <p>The table <code>ipv4_nhop</code> looks up <code>ipv4.dst</code>. The rule installed a moment ago matches, and its action sets the egress port to 3.</p>
+        </li>
+        <li class="step-item">
+          <button type="button" class="step-title"><span class="n">05</span>Out of port 3</button>
+          <p>The deparser turns the fields back into bytes, and the packet leaves port 3 on an ns-3 link to Host 2. Every step ran the real P4 program.</p>
+        </li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== CHAPTER 2 ============================== -->
+<section class="section section-alt chapter" id="ch2">
+  <div class="wrap">
+    <p class="eyebrow">Chapter 2 · Pipeline and queues</p>
+    <h2>Through the pipeline</h2>
+    <p class="section-lead">From the input buffer to the egress port: parsing, match-action stages, the traffic manager's priority queues, and the loops a P4 program can take.</p>
+
+    <div class="player" data-player="pipeline">
+      <div class="player-stage">
+        <div class="stage">
+          <svg viewBox="0 0 864 450" role="img" aria-labelledby="s2-title s2-desc">
+            <title id="s2-title">The V1model pipeline in P4sim</title>
+            <desc id="s2-desc">Port 0, input buffer, parser, ingress match-action stages, traffic manager with eight priority queues for port 3, egress stages, deparser and port 3. Configuration comes from ns-3 attributes and from the P4 program. Loops for resubmit, recirculate and egress-to-egress clones run below.</desc>
+
+            <!-- configuration cards -->
+            <rect id="s2-cfg-ns3" class="box alt" x="12" y="14" width="300" height="60" rx="10"/>
+            <text class="t-tag t-amber" x="26" y="34">FROM ns-3 ATTRIBUTES</text>
+            <rect class="chip" x="26" y="44" width="70" height="20" rx="10"/><text class="t-chip" x="61" y="58" text-anchor="middle">buffers</text>
+            <rect class="chip" x="104" y="44" width="88" height="20" rx="10"/><text class="t-chip" x="148" y="58" text-anchor="middle">SwitchRate</text>
+            <rect class="chip" x="200" y="44" width="54" height="20" rx="10"/><text class="t-chip" x="227" y="58" text-anchor="middle">ports</text>
+
+            <rect id="s2-cfg-p4" class="box alt" x="326" y="14" width="526" height="60" rx="10"/>
+            <text class="t-tag t-teal" x="340" y="34">FROM THE P4 PROGRAM (COMPILED JSON)</text>
+            <rect class="chip" x="340" y="44" width="98" height="20" rx="10"/><text class="t-chip" x="389" y="58" text-anchor="middle">parser graph</text>
+            <rect class="chip" x="446" y="44" width="94" height="20" rx="10"/><text class="t-chip" x="493" y="58" text-anchor="middle">control flow</text>
+            <rect class="chip" x="548" y="44" width="66" height="20" rx="10"/><text class="t-chip" x="581" y="58" text-anchor="middle">actions</text>
+            <rect class="chip" x="622" y="44" width="60" height="20" rx="10"/><text class="t-chip" x="652" y="58" text-anchor="middle">tables</text>
+
+            <!-- PHV -->
+            <g id="s2-phv" class="fx">
+              <rect class="box phv" x="174" y="88" width="226" height="52" rx="8"/>
+              <text class="t-tag t-teal" x="186" y="104">PHV · header &amp; metadata fields</text>
+              <text class="t-sub" x="186" y="120">ipv4.dst = 10.1.1.2</text>
+              <text id="s2-phv-2" class="t-sub" x="186" y="133">egress_spec = –   priority = –</text>
+            </g>
+
+            <!-- main line -->
+            <path class="wire" d="M64 200 H798"/>
+
+            <rect id="s2-p0" class="box port" x="12" y="176" width="52" height="48" rx="8"/>
+            <text class="t-port" x="38" y="204" text-anchor="middle">Port 0</text>
+
+            <rect id="s2-in" class="box" x="78" y="150" width="82" height="100" rx="10"/>
+            <text class="t-label t-small" x="119" y="170" text-anchor="middle">Input buffer</text>
+            <rect id="s2-lane-int" class="lane" x="88" y="180" width="62" height="18" rx="4"/>
+            <text class="t-lane" x="119" y="192" text-anchor="middle">internal</text>
+            <rect id="s2-lane-ext" class="lane" x="88" y="206" width="62" height="18" rx="4"/>
+            <text class="t-lane" x="119" y="218" text-anchor="middle">external</text>
+
+            <rect id="s2-parser" class="box" x="174" y="150" width="72" height="100" rx="10"/>
+            <text class="t-label t-small" x="210" y="196" text-anchor="middle">Parser</text>
+            <text class="t-sub t-tiny" x="210" y="212" text-anchor="middle">parse graph</text>
+
+            <rect id="s2-ing" class="box" x="260" y="150" width="140" height="100" rx="10"/>
+            <text class="t-label t-small" x="330" y="170" text-anchor="middle">Ingress</text>
+            <rect id="s2-i1" class="box stagebox" x="270" y="180" width="32" height="44" rx="6"/>
+            <text class="t-stage" x="286" y="206" text-anchor="middle">1</text>
+            <rect id="s2-i2" class="box stagebox" x="314" y="180" width="32" height="44" rx="6"/>
+            <text class="t-stage" x="330" y="206" text-anchor="middle">2</text>
+            <rect id="s2-i3" class="box stagebox" x="358" y="180" width="32" height="44" rx="6"/>
+            <text class="t-stage" x="374" y="206" text-anchor="middle">N</text>
+            <text class="t-sub t-tiny" x="330" y="241" text-anchor="middle">match-action stages</text>
+
+            <rect id="s2-tm" class="box" x="414" y="126" width="150" height="148" rx="10"/>
+            <text class="t-label t-small" x="489" y="143" text-anchor="middle">Traffic manager</text>
+            <text class="t-sub t-tiny" x="489" y="157" text-anchor="middle">port 3 · 8 priority queues</text>
+            <g id="s2-queues">
+              <rect id="s2-q7" class="lane" x="434" y="166" width="118" height="9" rx="2"/><text class="t-qn" x="426" y="173" text-anchor="middle">7</text>
+              <rect id="s2-q6" class="lane" x="434" y="177" width="118" height="9" rx="2"/><text class="t-qn" x="426" y="184" text-anchor="middle">6</text>
+              <rect id="s2-q5" class="lane" x="434" y="188" width="118" height="9" rx="2"/><text class="t-qn" x="426" y="195" text-anchor="middle">5</text>
+              <rect id="s2-q4" class="lane" x="434" y="199" width="118" height="9" rx="2"/><text class="t-qn" x="426" y="206" text-anchor="middle">4</text>
+              <rect id="s2-q3" class="lane" x="434" y="210" width="118" height="9" rx="2"/><text class="t-qn" x="426" y="217" text-anchor="middle">3</text>
+              <rect id="s2-q2" class="lane" x="434" y="221" width="118" height="9" rx="2"/><text class="t-qn" x="426" y="228" text-anchor="middle">2</text>
+              <rect id="s2-q1" class="lane" x="434" y="232" width="118" height="9" rx="2"/><text class="t-qn" x="426" y="239" text-anchor="middle">1</text>
+              <rect id="s2-q0" class="lane" x="434" y="243" width="118" height="9" rx="2"/><text class="t-qn" x="426" y="250" text-anchor="middle">0</text>
+            </g>
+            <g id="s2-clock">
+              <circle class="clock-face" cx="489" cy="292" r="8"/>
+              <path class="clock-hand" d="M489 292 V286.5 M489 292 L492.5 294"/>
+            </g>
+            <text class="t-sub" x="503" y="296">1 packet every 1 / SwitchRate</text>
+
+            <rect id="s2-eg" class="box" x="578" y="150" width="120" height="100" rx="10"/>
+            <text class="t-label t-small" x="638" y="170" text-anchor="middle">Egress</text>
+            <rect id="s2-e1" class="box stagebox" x="590" y="180" width="40" height="44" rx="6"/>
+            <text class="t-stage" x="610" y="206" text-anchor="middle">1</text>
+            <text class="t-stage t-dim" x="638" y="206" text-anchor="middle">…</text>
+            <rect id="s2-e2" class="box stagebox" x="646" y="180" width="40" height="44" rx="6"/>
+            <text class="t-stage" x="666" y="206" text-anchor="middle">N</text>
+            <text class="t-sub t-tiny" x="638" y="241" text-anchor="middle">match-action</text>
+
+            <rect id="s2-dep" class="box" x="712" y="150" width="72" height="100" rx="10"/>
+            <text class="t-label t-small" x="748" y="196" text-anchor="middle">Deparser</text>
+            <text class="t-sub t-tiny" x="748" y="212" text-anchor="middle">PHV → bytes</text>
+
+            <rect id="s2-p3" class="box port" x="798" y="176" width="52" height="48" rx="8"/>
+            <text class="t-port" x="824" y="204" text-anchor="middle">Port 3</text>
+
+            <!-- loops and copies -->
+            <g id="s2-loops" class="fx">
+              <path class="wire dash loop" d="M330 250 V378 H104 V250"/>
+              <text class="t-loop" x="217" y="371" text-anchor="middle">resubmit</text>
+              <path class="wire dash loop" d="M748 250 V404 H132 V250"/>
+              <text class="t-loop" x="440" y="397" text-anchor="middle">recirculate</text>
+              <path class="wire dash loop" d="M638 250 V346 H540 V274"/>
+              <text class="t-loop" x="589" y="339" text-anchor="middle">clone E2E</text>
+              <rect class="chip chip-loop" x="350" y="258" width="62" height="18" rx="9"/>
+              <text class="t-chip t-violet" x="381" y="271" text-anchor="middle">clone I2E</text>
+              <rect class="chip chip-loop" x="437" y="312" width="96" height="18" rx="9"/>
+              <text class="t-chip t-violet" x="485" y="325" text-anchor="middle">multicast copies</text>
+            </g>
+
+            <!-- motion paths -->
+            <path id="s2-pA" class="mpath" d="M-24 200 H64 L88 215 H140"/>
+            <path id="s2-pB" class="mpath" d="M140 215 L160 200 H210"/>
+            <path id="s2-pC" class="mpath" d="M210 200 H386"/>
+            <path id="s2-pD" class="mpath" d="M386 200 H414 L434 192.5 H490"/>
+            <path id="s2-pAdv" class="mpath" d="M490 192.5 H530"/>
+            <path id="s2-pE" class="mpath" d="M530 192.5 H560 L578 200 H890"/>
+            <path id="s2-pBg7" class="mpath" d="M530 170.5 H560 L578 200 H890"/>
+            <path id="s2-pResub" class="mpath" d="M330 236 V378 H104 V224"/>
+            <path id="s2-pRecirc" class="mpath" d="M748 236 V404 H132 V224"/>
+            <path id="s2-pE2E" class="mpath" d="M638 236 V346 H540 V262"/>
+
+            <g id="s2-bg7" class="mover">
+              <rect class="pkt-shell" x="-17" y="-6" width="34" height="12" rx="4"/>
+              <rect class="seg seg-eth" x="-15" y="-4" width="8" height="8" rx="1.5"/><rect class="seg seg-ip" x="-5" y="-4" width="8" height="8" rx="1.5"/><rect class="seg seg-pay" x="5" y="-4" width="10" height="8" rx="1.5"/>
+            </g>
+            <g id="s2-bg5" class="mover">
+              <rect class="pkt-shell" x="-17" y="-6" width="34" height="12" rx="4"/>
+              <rect class="seg seg-eth" x="-15" y="-4" width="8" height="8" rx="1.5"/><rect class="seg seg-ip" x="-5" y="-4" width="8" height="8" rx="1.5"/><rect class="seg seg-pay" x="5" y="-4" width="10" height="8" rx="1.5"/>
+            </g>
+            <g id="s2-copy" class="mover">
+              <rect class="pkt-shell copy" x="-17" y="-6" width="34" height="12" rx="4"/>
+              <rect class="seg seg-eth" x="-15" y="-4" width="8" height="8" rx="1.5"/><rect class="seg seg-ip" x="-5" y="-4" width="8" height="8" rx="1.5"/><rect class="seg seg-pay" x="5" y="-4" width="10" height="8" rx="1.5"/>
+            </g>
+            <g id="s2-pkt" class="mover hero-pkt">
+              <rect class="pkt-shell" x="-19" y="-7" width="38" height="14" rx="4"/>
+              <rect class="seg seg-eth" x="-16" y="-4" width="7" height="8" rx="1.5"/>
+              <rect class="seg seg-ip" x="-7" y="-4" width="7" height="8" rx="1.5"/>
+              <rect class="seg seg-l4" x="2" y="-4" width="6" height="8" rx="1.5"/>
+              <rect class="seg seg-pay" x="10" y="-4" width="6" height="8" rx="1.5"/>
+            </g>
+          </svg>
+        </div>
+        <div class="stage-caption" aria-live="polite"></div>
+        <div class="controls"></div>
+      </div>
+
+      <ol class="steps">
+        <li class="step-item">
+          <button type="button" class="step-title"><span class="n">01</span>Configured from two sides</button>
+          <p>The compiled P4 program defines the parser graph, the control flow, the actions and the tables. <span class="nw">ns-3</span> attributes set the buffer sizes, the processing rate (<code>SwitchRate</code>) and the ports.</p>
+        </li>
+        <li class="step-item">
+          <button type="button" class="step-title"><span class="n">02</span>Wait in the input buffer</button>
+          <p>An arriving packet joins the input buffer. Packets from outside wait in one queue; resubmitted and recirculated packets have their own, higher-priority queue.</p>
+        </li>
+        <li class="step-item">
+          <button type="button" class="step-title"><span class="n">03</span>Parse</button>
+          <p>The parser follows the parse graph of the P4 program and extracts the headers into the packet header vector (PHV).</p>
+        </li>
+        <li class="step-item">
+          <button type="button" class="step-title"><span class="n">04</span>Ingress match-action</button>
+          <p>Stage by stage, ingress tables read the PHV and run actions, with tables, registers and counters as state. Here they set the egress port to 3 and the priority to 5.</p>
+        </li>
+        <li class="step-item">
+          <button type="button" class="step-title"><span class="n">05</span>Queue in the traffic manager</button>
+          <p>The packet joins queue 5 of port 3. An <span class="nw">ns-3</span> timer takes one packet every 1&#8202;/&#8202;<code>SwitchRate</code>, highest queue first: the packet in queue 7 leaves before ours. <a href="#ch3">Chapter 3</a> looks at the queues closely.</p>
+        </li>
+        <li class="step-item">
+          <button type="button" class="step-title"><span class="n">06</span>Egress, deparse, send</button>
+          <p>Egress tables can still rewrite the packet; the deparser turns the PHV back into bytes, and the packet leaves on port 3. V1model parses once and deparses at the end; PSA adds a deparser after ingress and a parser before egress.</p>
+        </li>
+        <li class="step-item">
+          <button type="button" class="step-title"><span class="n">07</span>Copies and loops</button>
+          <p>A program can also resubmit a packet to ingress, recirculate it after egress, clone it (ingress-to-egress or egress-to-egress), or send multicast copies to several ports.</p>
+        </li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== CHAPTER 3 ============================== -->
+<section class="section chapter" id="ch3">
+  <div class="wrap">
+    <p class="eyebrow">Chapter 3 · Queues and scheduling</p>
+    <h2>Which packet leaves next?</h2>
+    <p class="section-lead">A closer look at the traffic manager: eight priority queues per port, a scheduler driven by a clock, per-queue rate limits and full queues. Below the walkthrough, a live model lets you try it.</p>
+
+    <div class="player" data-player="queues">
+      <div class="player-stage">
+        <div class="stage wide">
+          <svg viewBox="0 0 960 430" role="img" aria-labelledby="q-title q-desc">
+            <title id="q-title">Priority queues and the scheduler of a P4sim V1model switch</title>
+            <desc id="q-desc">Host 0 sends three UDP flows. The ingress table udp_priority gives them priority 1, 2 and 3. Port 1 has eight queues in the traffic manager; on every tick of its clock the scheduler takes one packet from the highest queue whose head is ready. Packets then pass egress, the port's ns-3 TX queue and the link to Host 1. A panel shows the queueing metadata the switch writes.</desc>
+
+            <!-- the three flows -->
+            <text class="t-tag" x="12" y="30">P4-QUEUE-TEST</text>
+            <rect class="chip" x="116" y="14" width="166" height="24" rx="12"/>
+            <g class="qp f1" transform="translate(134 26)"><rect x="-8.5" y="-6" width="17" height="12" rx="3"/><text y="3" text-anchor="middle">1</text></g>
+            <text class="t-chip" x="150" y="30">UDP :2000 → priority 1</text>
+            <rect class="chip" x="292" y="14" width="166" height="24" rx="12"/>
+            <g class="qp f2" transform="translate(310 26)"><rect x="-8.5" y="-6" width="17" height="12" rx="3"/><text y="3" text-anchor="middle">2</text></g>
+            <text class="t-chip" x="326" y="30">UDP :3000 → priority 2</text>
+            <rect class="chip" x="468" y="14" width="166" height="24" rx="12"/>
+            <g class="qp f3" transform="translate(486 26)"><rect x="-8.5" y="-6" width="17" height="12" rx="3"/><text y="3" text-anchor="middle">3</text></g>
+            <text class="t-chip" x="502" y="30">UDP :4000 → priority 3</text>
+            <text class="t-sub" x="948" y="30" text-anchor="end">SwitchRate 1000 pps → 1 tick = 1 ms</text>
+
+            <!-- wires -->
+            <path class="wire" d="M96 228 H116"/>
+            <path class="wire" d="M284 228 H300"/>
+            <path class="wire" d="M616 228 H636"/>
+            <path class="wire" d="M768 228 H784"/>
+            <path class="wire" d="M858 228 H872"/>
+            <path id="q-link" class="wire" d="M910 288 V346"/>
+            <text class="t-sub t-tiny" x="902" y="322" text-anchor="end">link · DataRate</text>
+
+            <!-- Host 0 -->
+            <rect id="q-h0" class="box" x="12" y="178" width="84" height="100" rx="10"/>
+            <text class="t-label t-small" x="54" y="210" text-anchor="middle">Host 0</text>
+            <text class="t-sub t-tiny" x="54" y="226" text-anchor="middle">3 UDP flows</text>
+            <g class="qp f1" transform="translate(32 252)"><rect x="-8.5" y="-6" width="17" height="12" rx="3"/><text y="3" text-anchor="middle">1</text></g>
+            <g class="qp f2" transform="translate(54 252)"><rect x="-8.5" y="-6" width="17" height="12" rx="3"/><text y="3" text-anchor="middle">2</text></g>
+            <g class="qp f3" transform="translate(76 252)"><rect x="-8.5" y="-6" width="17" height="12" rx="3"/><text y="3" text-anchor="middle">3</text></g>
+
+            <!-- ingress classification -->
+            <rect id="q-ing" class="box" x="116" y="112" width="168" height="188" rx="10"/>
+            <text class="t-label t-small" x="200" y="132" text-anchor="middle">Ingress</text>
+            <text class="t-sub t-tiny" x="200" y="147" text-anchor="middle">table udp_priority</text>
+            <rect id="q-r1" class="row-bg" x="124" y="155" width="152" height="17" rx="3"/>
+            <text class="t-row" x="132" y="167">dst 2000 → priority 1</text>
+            <rect id="q-r2" class="row-bg" x="124" y="174" width="152" height="17" rx="3"/>
+            <text class="t-row" x="132" y="186">dst 3000 → priority 2</text>
+            <rect id="q-r3" class="row-bg" x="124" y="193" width="152" height="17" rx="3"/>
+            <text class="t-row" x="132" y="205">dst 4000 → priority 3</text>
+            <text class="t-sub t-tiny" x="200" y="262" text-anchor="middle">key: udp.dstPort</text>
+            <text class="t-sub t-tiny" x="200" y="276" text-anchor="middle">action set_priority(p)</text>
+
+            <!-- traffic manager -->
+            <rect id="q-tm" class="box" x="300" y="72" width="316" height="262" rx="12"/>
+            <text class="t-label t-small" x="458" y="92" text-anchor="middle">Traffic manager · port 1</text>
+            <text class="t-sub t-tiny" x="458" y="106" text-anchor="middle">priority p → queue p · head on the right</text>
+            <rect id="q-l7" class="lane" x="340" y="116" width="256" height="18" rx="3"/><text class="t-qn" x="332" y="128.5" text-anchor="end">q7</text>
+            <rect id="q-l6" class="lane" x="340" y="140" width="256" height="18" rx="3"/><text class="t-qn" x="332" y="152.5" text-anchor="end">q6</text>
+            <rect id="q-l5" class="lane" x="340" y="164" width="256" height="18" rx="3"/><text class="t-qn" x="332" y="176.5" text-anchor="end">q5</text>
+            <rect id="q-l4" class="lane" x="340" y="188" width="256" height="18" rx="3"/><text class="t-qn" x="332" y="200.5" text-anchor="end">q4</text>
+            <rect id="q-l3" class="lane" x="340" y="212" width="256" height="18" rx="3"/><text class="t-qn" x="332" y="224.5" text-anchor="end">q3</text>
+            <rect id="q-l2" class="lane" x="340" y="236" width="256" height="18" rx="3"/><text class="t-qn" x="332" y="248.5" text-anchor="end">q2</text>
+            <rect id="q-l1" class="lane" x="340" y="260" width="256" height="18" rx="3"/><text class="t-qn" x="332" y="272.5" text-anchor="end">q1</text>
+            <rect id="q-l0" class="lane" x="340" y="284" width="256" height="18" rx="3"/><text class="t-qn" x="332" y="296.5" text-anchor="end">q0</text>
+            <g id="q-rate" class="fx">
+              <rect class="chip chip-loop" x="346" y="214" width="78" height="14" rx="7"/>
+              <text class="t-chip t-violet" x="385" y="224.5" text-anchor="middle">≤ 500 pps</text>
+            </g>
+            <text id="q-ready" class="t-sub t-tiny t-violet fx" x="436" y="224.5">ready</text>
+            <text id="q-w2" class="t-sub t-tiny t-red fx" x="346" y="248.5">waiting</text>
+            <text id="q-w1" class="t-sub t-tiny t-red fx" x="346" y="272.5">waiting</text>
+            <g id="q-cap" class="fx">
+              <path class="cap-line" d="M468.5 256 V282"/>
+              <text class="t-sub t-tiny t-red" x="462" y="272.5" text-anchor="end">capacity 6</text>
+            </g>
+            <text id="q-drop" class="t-sub t-red fx" x="458" y="324" text-anchor="middle">dropped</text>
+
+            <!-- scheduler -->
+            <rect id="q-sch" class="box" x="636" y="112" width="132" height="188" rx="10"/>
+            <text class="t-label t-small" x="702" y="132" text-anchor="middle">Scheduler</text>
+            <text class="t-sub t-tiny" x="702" y="147" text-anchor="middle">one for the switch</text>
+            <g id="q-clock">
+              <circle class="clock-face" cx="702" cy="182" r="16"/>
+              <path class="clock-marks" d="M702 168 V171 M716 182 H713 M702 196 V193 M688 182 H691"/>
+              <path class="clock-hand" d="M702 182 V172 M702 182 L708 186"/>
+            </g>
+            <text class="t-sub t-tiny" x="702" y="213" text-anchor="middle">tick = 1 / SwitchRate</text>
+            <text class="t-sub t-tiny" x="702" y="250" text-anchor="middle">1 packet per tick,</text>
+            <text class="t-sub t-tiny" x="702" y="264" text-anchor="middle">highest ready queue</text>
+            <text id="q-t" class="t-row" x="702" y="288" text-anchor="middle">t = 0 ms</text>
+
+            <!-- egress and the port -->
+            <rect id="q-eg" class="box" x="784" y="168" width="74" height="120" rx="10"/>
+            <text class="t-label t-small" x="821" y="188" text-anchor="middle">Egress</text>
+            <text class="t-sub t-tiny" x="821" y="202" text-anchor="middle">+ deparser</text>
+            <text class="t-sub t-tiny" x="821" y="262" text-anchor="middle">reads deq_*</text>
+            <rect id="q-tx" class="box port" x="872" y="168" width="76" height="120" rx="10"/>
+            <text class="t-label t-small" x="910" y="188" text-anchor="middle">Port 1</text>
+            <text class="t-sub t-tiny" x="910" y="202" text-anchor="middle">TX queue</text>
+            <rect id="q-txl" class="lane" x="882" y="220" width="56" height="16" rx="3"/>
+            <text class="t-sub t-tiny" x="910" y="256" text-anchor="middle">DropTail</text>
+            <text class="t-sub t-tiny" x="910" y="270" text-anchor="middle">ns-3 device</text>
+
+            <!-- metadata -->
+            <rect id="q-meta" class="box phv" x="116" y="352" width="500" height="66" rx="10"/>
+            <text class="t-tag t-teal" x="130" y="370">queueing_metadata (times in ns)</text>
+            <text class="t-sub t-tiny" x="602" y="370" text-anchor="end">written by the queues, read in egress</text>
+            <text id="q-m1" class="t-sub" x="130" y="389">enq_timestamp = –  ·  enq_qdepth = –</text>
+            <text id="q-m2" class="t-sub" x="130" y="407">deq_timedelta = –  ·  deq_qdepth = –  ·  qid = –</text>
+
+            <text class="t-sub t-tiny" x="702" y="374" text-anchor="middle">one scheduler serves</text>
+            <text class="t-sub t-tiny" x="702" y="388" text-anchor="middle">every port, so they</text>
+            <text class="t-sub t-tiny" x="702" y="402" text-anchor="middle">share SwitchRate</text>
+
+            <!-- Host 1 -->
+            <rect id="q-h1" class="box" x="780" y="346" width="168" height="72" rx="10"/>
+            <text class="t-label t-small" x="864" y="368" text-anchor="middle">Host 1 · received</text>
+            <g class="qp f1" transform="translate(804 393)"><rect x="-8.5" y="-6" width="17" height="12" rx="3"/><text y="3" text-anchor="middle">1</text></g>
+            <text id="q-c1" class="t-row" x="817" y="397">0</text>
+            <g class="qp f2" transform="translate(856 393)"><rect x="-8.5" y="-6" width="17" height="12" rx="3"/><text y="3" text-anchor="middle">2</text></g>
+            <text id="q-c2" class="t-row" x="869" y="397">0</text>
+            <g class="qp f3" transform="translate(908 393)"><rect x="-8.5" y="-6" width="17" height="12" rx="3"/><text y="3" text-anchor="middle">3</text></g>
+            <text id="q-c3" class="t-row" x="921" y="397">0</text>
+
+            <!-- packets are added here by the script -->
+            <g id="q-pkts"></g>
+          </svg>
+        </div>
+        <div class="stage-caption" aria-live="polite"></div>
+        <div class="controls"></div>
+      </div>
+
+      <ol class="steps">
+        <li class="step-item">
+          <button type="button" class="step-title"><span class="n">01</span>Three flows, three priorities</button>
+          <p>The <code>p4-queue-test</code> example sends three UDP flows from Host 0 to Host 1. Its P4 program, <code>qos.p4</code>, matches the UDP destination port in the table <code>udp_priority</code> and sets <code>standard_metadata.priority</code>: port 2000 gets priority 1, port 3000 priority 2, port 4000 priority 3.</p>
+        </li>
+        <li class="step-item">
+          <button type="button" class="step-title"><span class="n">02</span>Eight queues per port</button>
+          <p>Every egress port has eight queues, and priority <em>p</em> goes to queue <em>p</em>. On the way in, the switch writes <code>enq_timestamp</code> and <code>enq_qdepth</code> into the packet's metadata. Packets arrive faster than they leave, so the queues fill.</p>
+        </li>
+        <li class="step-item">
+          <button type="button" class="step-title"><span class="n">03</span>One packet per tick</button>
+          <p>The scheduler runs on an <span class="nw">ns-3</span> timer. Every 1&#8202;/&#8202;<code>SwitchRate</code> it takes one packet, from the highest queue whose head is ready: one packet per millisecond with the default 1000 packets per second. There is one scheduler for the whole switch, so all ports share this rate.</p>
+        </li>
+        <li class="step-item">
+          <button type="button" class="step-title"><span class="n">04</span>Strict priority can starve</button>
+          <p>By default each queue may send as fast as <code>SwitchRate</code>, so the scheduler is plain strict priority. While queue 3 always has a packet ready, it wins every tick, and the packets in queues 2 and 1 keep waiting.</p>
+        </li>
+        <li class="step-item">
+          <button type="button" class="step-title"><span class="n">05</span>Rate limits per queue</button>
+          <p>Each queue can have its own rate. Here queue 3 is limited to 500 packets per second, one every 2&#8239;ms. When its next packet is not due yet, the scheduler serves the next queue down, so flows 2 and 1 get through. The V1model core sets these rates with <code>SetEgressPriorityQueueRate</code>.</p>
+        </li>
+        <li class="step-item">
+          <button type="button" class="step-title"><span class="n">06</span>A full queue drops</button>
+          <p>Each queue holds <code>QueueBufferSize</code> packets, 128 by default (6 in this picture). A packet that finds its queue full is dropped at once.</p>
+        </li>
+        <li class="step-item">
+          <button type="button" class="step-title"><span class="n">07</span>Out of the switch</button>
+          <p>At dequeue the switch writes <code>deq_timedelta</code> (the time spent queued, in nanoseconds in P4sim), <code>deq_qdepth</code> and <code>qid</code>, which egress code can read, for example to mark congestion. The packet then joins the port's <span class="nw">ns-3</span> TX queue, and the link sends it at its <code>DataRate</code>. If the link is slower than the switch, packets wait there instead, in arrival order.</p>
+        </li>
+      </ol>
+    </div>
+
+    <!-- live model -->
+    <div class="sandbox" id="qsim" aria-labelledby="qsim-title">
+      <div class="sb-head">
+        <div>
+          <p class="eyebrow">Try it</p>
+          <h3 id="qsim-title">Play with the queues</h3>
+          <p class="sb-lead">The same rules, simulated in your browser: three constant-rate UDP flows with 1000-byte payloads as in <code>p4-queue-test</code>, port 1's eight queues and scheduler, and its <span class="nw">ns-3</span> TX queue of 100 packets. A simplified model, not <span class="nw">ns-3</span> output.</p>
+        </div>
+        <div class="sb-actions">
+          <button type="button" class="btn btn-small btn-primary" data-act="run">Pause</button>
+          <button type="button" class="btn btn-small" data-act="restart">Restart</button>
+        </div>
+      </div>
+
+      <div class="sb-presets" role="group" aria-label="Scenarios">
+        <span>Scenario</span>
+        <button type="button" data-preset="starve" aria-pressed="true">Default: queue 1 starves</button>
+        <button type="button" data-preset="limit" aria-pressed="false">Rate-limit queue 3</button>
+        <button type="button" data-preset="light" aria-pressed="false">Light load</button>
+        <button type="button" data-preset="link" aria-pressed="false">Slow link</button>
+      </div>
+      <p class="sb-note" aria-live="polite"></p>
+
+      <div class="sb-grid">
+        <form class="sb-controls" action="#">
+          <fieldset>
+            <legend>Offered load</legend>
+            <label class="sb-row"><span class="sb-name"><i class="key f1"></i>Flow 1 · :2000 → q1</span><input type="range" name="r1" min="0" max="1500" step="25"><output></output></label>
+            <label class="sb-row"><span class="sb-name"><i class="key f2"></i>Flow 2 · :3000 → q2</span><input type="range" name="r2" min="0" max="1500" step="25"><output></output></label>
+            <label class="sb-row"><span class="sb-name"><i class="key f3"></i>Flow 3 · :4000 → q3</span><input type="range" name="r3" min="0" max="1500" step="25"><output></output></label>
+          </fieldset>
+          <fieldset>
+            <legend>Switch</legend>
+            <label class="sb-row"><span class="sb-name">SwitchRate</span><input type="range" name="sw" min="100" max="2000" step="50"><output></output></label>
+            <label class="sb-row"><span class="sb-name">QueueBufferSize</span><input type="range" name="cap" min="4" max="256" step="4"><output></output></label>
+            <label class="sb-check"><input type="checkbox" name="lim"> Limit queue 3</label>
+            <label class="sb-row"><span class="sb-name">Queue 3 rate</span><input type="range" name="limr" min="50" max="2000" step="50"><output></output></label>
+          </fieldset>
+          <fieldset>
+            <legend>Link to Host 1</legend>
+            <label class="sb-row"><span class="sb-name">DataRate</span><input type="range" name="link" min="0" max="7" step="1"><output></output></label>
+          </fieldset>
+        </form>
+
+        <div class="sb-view">
+          <div class="sb-panel">
+            <div class="sb-panel-head"><span>Port 1 queues</span><span class="sb-clock">t = 0.0 s</span></div>
+            <div class="sb-lanes"></div>
+          </div>
+          <div class="sb-panel">
+            <div class="sb-panel-head"><span>Delivered to Host 1 · packets per second</span><span>last 10 s</span></div>
+            <ul class="sb-legend"></ul>
+            <div class="sb-plot" tabindex="0" role="img" aria-label="Line chart of the packets per second each flow delivers to Host 1 over the last 10 seconds. Focus it and use the arrow keys to read values; the table below has the same numbers.">
+              <svg viewBox="0 0 560 206" aria-hidden="true"></svg>
+              <div class="sb-tip" hidden></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sb-table-wrap">
+        <table class="sb-table">
+          <caption>Per flow · rates and queue delay over the last second, drops since the start</caption>
+          <thead><tr><th scope="col">Flow</th><th scope="col">Offered</th><th scope="col">Delivered</th><th scope="col">Dropped: switch</th><th scope="col">Dropped: TX</th><th scope="col" title="Average time in the switch queue (deq_timedelta); while a queue is starved, how long its head has waited">Queue delay</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== CHAPTER 4 ============================== -->
+<section class="section section-alt chapter" id="ch4">
+  <div class="wrap">
+    <p class="eyebrow">Chapter 4 · Custom headers</p>
+    <h2>Custom headers across the network</h2>
+    <p class="section-lead">Hosts in <span class="nw">ns-3</span> can carry a header of your own design, so P4 programs such as tunnels have something to parse and match.</p>
+
+    <div class="player" data-player="headers">
+      <div class="player-stage">
+        <div class="mode-toggle" role="group" aria-label="Where the custom header goes">
+          <span>Custom header position</span>
+          <button type="button" data-mode="before" aria-pressed="true">before IPv4</button>
+          <button type="button" data-mode="after" aria-pressed="false">after IPv4</button>
+        </div>
+        <div class="stage">
+          <svg viewBox="0 0 820 400" role="img" aria-labelledby="s3-title s3-desc">
+            <title id="s3-title">A custom header on its way through the network</title>
+            <desc id="s3-desc">A packet with Ethernet, IPv4, UDP and payload. The sending CustomP2PNetDevice inserts a custom header and changes the type field that points to it. P4 switches parse the custom header. The receiving device removes it and restores the original packet.</desc>
+
+            <!-- track -->
+            <path class="wire" d="M83 44 H737"/>
+            <!-- the marker runs behind the chips; the chip it reaches lights up -->
+            <circle id="s3-marker" class="marker" cx="83" cy="44" r="6"/>
+            <rect id="s3-c1" class="box track" x="24" y="28" width="118" height="32" rx="16"/>
+            <text class="t-label t-small" x="83" y="48" text-anchor="middle">Host 1 stack</text>
+            <rect id="s3-c2" class="box track" x="172" y="28" width="150" height="32" rx="16"/>
+            <text class="t-label t-small" x="247" y="48" text-anchor="middle">CustomP2PNetDevice</text>
+            <rect id="s3-c3" class="box track" x="352" y="28" width="116" height="32" rx="16"/>
+            <text class="t-label t-small" x="410" y="48" text-anchor="middle">P4 switch</text>
+            <rect id="s3-c4" class="box track" x="498" y="28" width="150" height="32" rx="16"/>
+            <text class="t-label t-small" x="573" y="48" text-anchor="middle">CustomP2PNetDevice</text>
+            <rect id="s3-c5" class="box track" x="678" y="28" width="118" height="32" rx="16"/>
+            <text class="t-label t-small" x="737" y="48" text-anchor="middle">Host 2 stack</text>
+            <text class="t-sub t-tiny" x="83" y="76" text-anchor="middle">sender</text>
+            <text class="t-sub t-tiny" x="247" y="76" text-anchor="middle">inserts</text>
+            <text class="t-sub t-tiny" x="410" y="76" text-anchor="middle">parses · matches</text>
+            <text class="t-sub t-tiny" x="573" y="76" text-anchor="middle">removes</text>
+            <text class="t-sub t-tiny" x="737" y="76" text-anchor="middle">receiver</text>
+
+            <!-- header blocks (x set by script) -->
+            <g id="s3-b-eth" class="hblock" transform="translate(140 0)">
+              <rect class="hb hb-eth" x="0" y="150" width="124" height="80" rx="10"/>
+              <text class="t-label" x="62" y="176" text-anchor="middle">Ethernet</text>
+              <text id="s3-f-eth" class="t-field" x="62" y="198" text-anchor="middle">etherType 0x0800</text>
+              <text class="t-tag" x="62" y="220" text-anchor="middle">LAYER 2</text>
+            </g>
+            <g id="s3-b-ip" class="hblock" transform="translate(268 0)">
+              <rect class="hb hb-ip" x="0" y="150" width="150" height="80" rx="10"/>
+              <text class="t-label" x="75" y="176" text-anchor="middle">IPv4</text>
+              <text id="s3-f-ip" class="t-field" x="75" y="198" text-anchor="middle">protocol 0x11 (UDP)</text>
+              <text class="t-tag" x="75" y="220" text-anchor="middle">LAYER 3</text>
+            </g>
+            <g id="s3-b-udp" class="hblock" transform="translate(422 0)">
+              <rect class="hb hb-l4" x="0" y="150" width="104" height="80" rx="10"/>
+              <text class="t-label" x="52" y="176" text-anchor="middle">UDP</text>
+              <text class="t-field" x="52" y="198" text-anchor="middle">ports</text>
+              <text class="t-tag" x="52" y="220" text-anchor="middle">LAYER 4</text>
+            </g>
+            <g id="s3-b-pay" class="hblock" transform="translate(530 0)">
+              <rect class="hb hb-pay" x="0" y="150" width="150" height="80" rx="10"/>
+              <text class="t-label" x="75" y="176" text-anchor="middle">Payload</text>
+              <text class="t-field" x="75" y="198" text-anchor="middle">application data</text>
+            </g>
+            <g id="s3-b-cus" class="hblock hidden-block" transform="translate(200 -60)">
+              <rect class="hb hb-cus" x="0" y="150" width="132" height="80" rx="10"/>
+              <text class="t-label" x="66" y="174" text-anchor="middle">CustomHeader</text>
+              <text class="t-field" x="66" y="194" text-anchor="middle">proto_id · dst_id</text>
+              <text id="s3-f-cus" class="t-field t-amber" x="66" y="210" text-anchor="middle">next: 0x0800 (IPv4)</text>
+              <text class="t-tag" x="66" y="224" text-anchor="middle">CUSTOM</text>
+            </g>
+
+            <!-- notes -->
+            <text id="s3-note1" class="t-note" x="410" y="272" text-anchor="middle">etherType 0x0800 tells the receiver that IPv4 comes next</text>
+            <text id="s3-note2" class="t-note t-dim" x="410" y="294" text-anchor="middle"></text>
+
+            <!-- parse graph -->
+            <g id="s3-pg" class="fx">
+              <text class="t-tag" x="410" y="322" text-anchor="middle">P4 PARSER (basic_tunnel)</text>
+              <path id="s3-pg-e1" class="wire" d="M305 357 H355"/>
+              <path id="s3-pg-e2" class="wire" d="M465 357 H515"/>
+              <rect id="s3-pg-n1" class="box" x="195" y="342" width="110" height="30" rx="8"/>
+              <text class="t-label t-small" x="250" y="361" text-anchor="middle">ethernet</text>
+              <rect id="s3-pg-n2" class="box" x="355" y="342" width="110" height="30" rx="8"/>
+              <text id="s3-pg-t2" class="t-label t-small" x="410" y="361" text-anchor="middle">custom</text>
+              <rect id="s3-pg-n3" class="box" x="515" y="342" width="110" height="30" rx="8"/>
+              <text id="s3-pg-t3" class="t-label t-small" x="570" y="361" text-anchor="middle">ipv4</text>
+              <text id="s3-pg-l1" class="t-sub t-tiny" x="330" y="350" text-anchor="middle">0x00DC</text>
+              <text id="s3-pg-l2" class="t-sub t-tiny" x="490" y="350" text-anchor="middle">0x0800</text>
+              <text id="s3-pg-tab" class="t-sub t-amber fx" x="650" y="361">→ match dst_id</text>
+            </g>
+          </svg>
+        </div>
+        <div class="stage-caption" aria-live="polite"></div>
+        <div class="controls"></div>
+      </div>
+
+      <ol class="steps">
+        <li class="step-item">
+          <button type="button" class="step-title"><span class="n">01</span>An ordinary packet</button>
+          <p>Host 1's <span class="nw">ns-3</span> stack builds Ethernet, IPv4 and UDP headers. Each header's type field names the next one: etherType 0x0800 means IPv4.</p>
+        </li>
+        <li class="step-item">
+          <button type="button" class="step-title"><span class="n">02</span>Describe your own header</button>
+          <p>A <code>CustomHeader</code> is a list of named fields with bit widths, plus a layer and an operator that say where it goes. From the <code>p4-basic-tunnel</code> example:</p>
+<pre class="code"><code>CustomHeader h;
+h.<span class="tok-f">SetLayer</span>(HeaderLayer::LAYER_3);
+h.<span class="tok-f">SetOperator</span>(ADD_BEFORE);   <span class="tok-c">// before IPv4</span>
+h.<span class="tok-f">AddField</span>(<span class="tok-s">"proto_id"</span>, <span class="tok-n">16</span>);
+h.<span class="tok-f">AddField</span>(<span class="tok-s">"dst_id"</span>, <span class="tok-n">16</span>);
+device-&gt;<span class="tok-f">SetCustomHeader</span>(h);</code></pre>
+        </li>
+        <li class="step-item">
+          <button type="button" class="step-title"><span class="n">03</span>The sending device inserts it</button>
+          <p><code>CustomP2PNetDevice</code> inserts the header and rewires the chain: the type field in front of it becomes 0xDC, P4sim's custom protocol number, and the custom header records which protocol followed, so the original packet can be restored.</p>
+        </li>
+        <li class="step-item">
+          <button type="button" class="step-title"><span class="n">04</span>P4 switches parse it</button>
+          <p>On the way, a P4 switch sees the 0xDC type and its parser extracts the custom header. Tables can then match on its fields: <code>basic_tunnel</code> forwards on <code>dst_id</code>.</p>
+        </li>
+        <li class="step-item">
+          <button type="button" class="step-title"><span class="n">05</span>The receiver removes it</button>
+          <p>The receiving <code>CustomP2PNetDevice</code> walks the headers, drops the custom one, restores the original type field and passes an ordinary packet to its IPv4 stack.</p>
+        </li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="people">
+      <div>
+        <p class="eyebrow">Next</p>
+        <h2>Run it yourself</h2>
+        <p>Every walkthrough above maps to code and examples in the repository: <a href="https://github.com/HapCommSys/p4sim/blob/main/model/p4-switch-net-device.cc"><code>p4-switch-net-device.cc</code></a>, <a href="https://github.com/HapCommSys/p4sim/blob/main/model/p4-core-v1model.cc"><code>p4-core-v1model.cc</code></a>, <a href="https://github.com/HapCommSys/p4sim/blob/main/utils/p4-queue.h"><code>p4-queue.h</code></a>, <a href="https://github.com/HapCommSys/p4sim/blob/main/model/custom-p2p-net-device.cc"><code>custom-p2p-net-device.cc</code></a>, and the examples <code>p4-v1model-ipv4-forwarding</code>, <code>p4-queue-test</code> and <code>p4-basic-tunnel</code>.</p>
+      </div>
+      <div class="contribute card">
+        <h3>Try P4sim</h3>
+        <p>Install it with ns-3.39 and run the examples.</p>
+        <div class="cta cta-tight">
+          <a class="btn btn-small btn-primary" href="../#start">Get started</a>
+          <a class="btn btn-small" href="https://github.com/HapCommSys/p4sim">GitHub</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <p>P4sim is open source under the <a href="https://github.com/HapCommSys/p4sim/blob/main/LICENSE">Apache License 2.0</a>. Developed at <a href="https://github.com/HapCommSys">HapCommSys</a>, TU Dresden.</p>
+    <p><a href="../">P4sim overview</a> · <a href="../roadmap/">Roadmap</a> · <a href="/">Mingyu Ma's homepage</a></p>
+  </div>
+</footer>
+
+<script src="../assets/main.js" defer></script>
+<script src="../assets/inside.js" defer></script>
+</body>
+</html>
