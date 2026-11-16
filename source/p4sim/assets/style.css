@@ -220,6 +220,22 @@ strong { font-weight: 650; }
 .pipeline .d-pkt { fill: var(--amber); stroke: var(--surface); stroke-width: 1.2; }
 @media (prefers-reduced-motion: reduce) { .pipeline .d-packets { display: none; } }
 
+/* "More detail" link under the hero figure */
+.more-detail {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px;
+  padding: 12px 14px 12px 18px; border-radius: 14px; border: 1px solid var(--border); background: var(--surface);
+  color: var(--text); font-weight: 650; box-shadow: var(--shadow); transition: border-color 0.2s, transform 0.2s;
+}
+.more-detail:hover { text-decoration: none; border-color: var(--accent); transform: translateY(-1px); }
+.more-detail small { display: block; color: var(--muted); font-weight: 450; font-size: 0.84rem; margin-top: 1px; }
+.more-detail .arrow {
+  flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%;
+  background: var(--accent); color: var(--on-accent); font-size: 1.05rem; line-height: 1;
+  transition: transform 0.2s;
+}
+.more-detail:hover .arrow { transform: translateX(3px); }
+@media (prefers-reduced-motion: reduce) { .more-detail, .more-detail .arrow { transition: none; } }
+
 /* ---------- sections ---------- */
 .section { padding: 88px 0; }
 .section-alt { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
