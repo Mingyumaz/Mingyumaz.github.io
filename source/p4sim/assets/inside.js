@@ -847,6 +847,7 @@
           st.t = t0 + 2 * DT;
           // the first finds the pipeline idle and passes at once; the others wait
           var first = qEnter(c, els[0], 2, els[0]._arr, [[96, QY], [290, QY], [308, qLaneY(2)]], 1300);
+          first.catch(noop);   // awaited below; a jump to another step may abort it before
           await c.wait(350);
           await Promise.all([
             qFly(c, els[1], [[96, QY], [qInX(0), QY]], 700),
