@@ -317,7 +317,6 @@ Inside the switch (chapters 2 and 3 checked against `main` at `488dd6b`, chapter
 
 - **Architecture figure**: replace `assets/p4sim-arch.png` when p4sim pull request #85 merges.
 - **Old blog repository**: archive `Mingyumaz/Hexo-Blog`, delete its `GH_TOKEN` and `GH_USERNAME` secrets, and revoke that personal access token. It is no longer used.
-- **Merged branches**: `merge-hexo-source` and `add-p4sim-how-it-works` can be deleted.
 - **Optional**: a short explainer video built from the animations (deferred).
 - **Questions for the P4sim code** (found while writing the page; they are not website bugs):
   - The `utils/p4-queue.h` comment says priority 0 is the highest, but the code serves 7 first.
