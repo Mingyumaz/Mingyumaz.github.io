@@ -375,22 +375,14 @@
   // ======================================================================
   // Chapter 2: pipeline and traffic manager
   // ======================================================================
-  function tick(c) {
-    var clock = $("s2-clock"), hand = clock.querySelector(".clock-hand");
-    var p = c.p;
-    var from = p.state.angle || 0;
-    p.state.angle = from + 90;
-    clock.classList.add("tick");
-    return c.tween(260, function (t) {
-      hand.setAttribute("transform", "rotate(" + (from + 90 * t) + " 489 292)");
-    }).then(function () { return c.wait(160); }).then(function () { clock.classList.remove("tick"); });
+  // port 3 has sent a frame and takes its next packet
+  function portFree(c) {
+    c.add("s2-free", "on-amber");
+    return c.wait(380).then(function () { c.rm("s2-free", "on-amber"); return c.wait(120); });
   }
 
   var chapterPipeline = {
-    reset: function (c) {
-      var hand = $("s2-clock").querySelector(".clock-hand");
-      hand.setAttribute("transform", "rotate(" + (c.p.state.angle || 0) + " 489 292)");
-    },
+    reset: function () {},
     steps: [
       { // 01 configuration
         run: async function (c) {
@@ -455,13 +447,13 @@
           c.place("s2-bg5", "s2-pE", 0); c.show("s2-bg5"); c.add("s2-q5", "on-amber");
           await c.move("s2-pkt", "s2-pD", 1100);
           await c.wait(350);
-          await tick(c);
+          await portFree(c);
           await c.move("s2-bg7", "s2-pBg7", 1200);
           c.hide("s2-bg7"); c.rm("s2-q7", "on-amber");
-          await tick(c);
+          await portFree(c);
           await c.move("s2-bg5", "s2-pE", 1200);
           c.hide("s2-bg5");
-          await tick(c);
+          await portFree(c);
           await c.move("s2-pkt", "s2-pAdv", 450);
           await c.wait(600);
         },
@@ -505,24 +497,31 @@
   };
 
   // ======================================================================
-  // Chapter 3: queues and scheduling
-  // The steps follow P4CoreV1model and NSQueueingLogicPriRL (utils/p4-queue.h):
-  // priority p -> queue p; on each tick (1 / SwitchRate) one packet leaves, from
-  // the highest queue whose head is due; a packet is due at
-  // max(arrival, previous due time of its queue + 1 / queue rate), and every
-  // queue rate defaults to SwitchRate. Times here are in ms (1 tick = 1 ms).
+  // Chapter 3: queues and the egress
+  // The steps follow P4CoreV1model, NSQueueingLogicPriRL (utils/p4-queue.h) and
+  // doc/event-driven-tm-scheduler.md: priority p -> queue p; a packet that finds
+  // its queue full is dropped; a queue with a rate stamps each packet
+  // due = max(arrival, due of the previous one + 1 / rate), a queue without one
+  // due = arrival. Port 1 sends one frame at a time; when the last bit has left,
+  // it takes the highest queue whose head is due (or waits for the earliest due
+  // time), and the egress runs then. Times are in µs: a 1042-byte frame takes
+  // FT = 83.36 µs at 100 Mbps, and packets arrive DT = 8.336 µs apart over
+  // Host 0's 1 Gbps link.
   // ======================================================================
   var SVGNS = "http://www.w3.org/2000/svg";
   var QY = 228;                                              // main line
+  var FT = 83.36, DT = 8.336, WIRE_W = 56;
   function qLaneY(k) { return 116 + (7 - k) * 24 + 9; }       // centre of lane k
   function qSlotX(j) { return 584 - j * 21; }                 // j-th packet from the head
-  function fmtNs(ms) { return String(Math.round(ms * 1e6)).replace(/\B(?=(\d{3})+(?!\d))/g, " "); }
-  function fmtMs(ms) { return (Math.round(ms * 10) / 10).toFixed(1); }
+  function qInX(j) { return 266 - j * 19; }                   // j-th packet in the input buffer
+  function fmtNs(us) { return String(Math.round(us * 1000)).replace(/\B(?=(\d{3})+(?!\d))/g, " "); }
+  function fmtUs(us) { return (Math.round(us * 10) / 10).toFixed(1); }
 
   function qPos(el, x, y) {
     el._x = x; el._y = y;
     el.setAttribute("transform", "translate(" + x.toFixed(2) + " " + y.toFixed(2) + ")");
   }
+  // a packet of flow f (f = 0: an earlier frame of other traffic)
   function qMake(f) {
     var g = document.createElementNS(SVGNS, "g");
     g.setAttribute("class", "qp f" + f);
@@ -531,7 +530,7 @@
     var t = document.createElementNS(SVGNS, "text");
     t.setAttribute("y", "3");
     t.setAttribute("text-anchor", "middle");
-    t.textContent = String(f);
+    t.textContent = f ? String(f) : "";
     g.appendChild(r);
     g.appendChild(t);
     g._f = f;
@@ -569,25 +568,24 @@
     Array.prototype.forEach.call(c.p.svg.querySelectorAll(".box.on"), function (el) { el.classList.remove("on"); });
     ids.forEach(function (id) { c.add(id); });
   }
+  function noop() {}
 
-  // a packet of flow f arrives, is classified and joins queue f (or is dropped)
-  function qArrive(c, f, ms) {
+  // the packet el of flow f reaches the output queues at time t, flying along
+  // pts and then into lane f: it joins queue f, or is dropped if the queue is full
+  function qEnter(c, el, f, t, pts, ms) {
     var st = c.p.state, q = st.q[f], y = qLaneY(f);
-    st.t = Math.max(st.t, st.tick) + 0.1;
-    var el = qMake(f);
-    el._enq = st.t;
-    qPos(el, 96, QY);
+    el._enq = t;
     c.add("q-r" + f, "hit");
     var j = q.length, full = j >= st.cap;
     if (!full) {
-      el._due = Math.max(st.t, st.last[f] + 1000 / st.rate[f]);
+      el._due = Math.max(t, st.last[f] + 1e6 / st.rate[f]);
       st.last[f] = el._due;
       q.push(el);   // the slot is taken now, so packets still in flight stack up
-      c.text("q-m1", "enq_timestamp = " + fmtNs(el._enq) + "  ·  enq_qdepth = " + j);
+      c.text("q-m1", "enq_timestamp = " + fmtNs(t) + "  ·  enq_qdepth = " + j);
       c.add("q-m1", "changed");
     }
     el._flying = true;
-    return qFly(c, el, [[96, QY], [290, QY], [308, y], [qSlotX(j), y]], ms).then(function () {
+    return qFly(c, el, pts.concat([[qSlotX(j), y]]), ms).then(function () {
       el._flying = false;
       c.rm("q-r" + f, "hit");
       if (!full) return qLane(c, f, 160);
@@ -595,40 +593,65 @@
       st.drop++;
       c.text("q-drop", "✕ " + st.drop + " dropped: queue " + f + " was full");
       c.show("q-drop");
-      return c.tween(600, function (t) {
-        qPos(el, qSlotX(j), y + 16 * t);
-        el.style.opacity = String(1 - t);
+      return c.tween(600, function (u) {
+        qPos(el, qSlotX(j), y + 16 * u);
+        el.style.opacity = String(1 - u);
       }).then(function () { el.remove(); });
     });
   }
-
-  function qTick(c) {
-    var st = c.p.state, clock = $("q-clock"), hand = clock.querySelector(".clock-hand");
-    var from = st.angle;
-    st.angle += 90;
-    st.tick++;
-    c.text("q-t", "t = " + st.tick + " ms");
-    clock.classList.add("tick");
-    return c.tween(240, function (t) {
-      hand.setAttribute("transform", "rotate(" + (from + 90 * t) + " 702 182)");
-    }).then(function () { return c.wait(110); }).then(function () { clock.classList.remove("tick"); });
+  // a packet of flow f arrives from Host 0 while port 1 sends its current frame
+  function qArrive(c, f, ms) {
+    var st = c.p.state;
+    st.t = Math.max(st.t, st.busyFrom) + DT;
+    var el = qMake(f);
+    qPos(el, 96, QY);
+    return qEnter(c, el, f, st.t, [[96, QY], [290, QY], [308, qLaneY(f)]], ms);
   }
-  // the highest queue whose head packet is due
+  function qStagger(c, flows, gap, ms) {
+    return Promise.all(flows.map(function (f, i) {
+      return c.wait(i * gap).then(function () { return qArrive(c, f, ms); });
+    }));
+  }
+
+  // the bar under port 1: how much of the current frame is on the wire
+  function qWire(c, from, to, ms) {
+    var bar = $("q-wire");
+    return c.tween(ms, function (t) { bar.setAttribute("width", (WIRE_W * (from + (to - from) * t)).toFixed(1)); });
+  }
+  function qShowTime(c) { c.text("q-t", "t = " + fmtUs(c.p.state.now) + " µs"); }
+  // the frame on the wire has left, so port 1 is free; the frame travels on to
+  // Host 1 (in st.flights, while the port goes on)
+  function qFinish(c, ms) {
+    var st = c.p.state, el = st.wire;
+    if (!el) return Promise.resolve();
+    return qWire(c, st.wireFrac, 1, 260 * (1 - st.wireFrac)).then(function () {
+      st.wire = null;
+      st.wireFrac = 0;
+      $("q-wire").setAttribute("width", "0");
+      c.text("q-st", "free");
+      c.rm("q-st", "changed");
+      qShowTime(c);
+      var fly = qFly(c, el, [[910, QY], [910, 350]], ms || 700).then(function () { qDeliver(c, el); });
+      st.flights.push(fly.catch(noop));
+    });
+  }
+  // the highest queue whose head packet is due at time now
   function qPick(st) {
     for (var k = 7; k >= 0; k--) {
       var q = st.q[k];
-      if (q.length && q[0]._due <= st.tick + 1e-9) return k;
+      if (q.length && q[0]._due <= st.now + 1e-9) return k;
     }
     return -1;
   }
-  function qDeqMeta(c, el, k) {
-    var st = c.p.state;
-    c.text("q-m2", "deq_timedelta = " + fmtNs(st.tick - el._enq) + "  ·  deq_qdepth = " + st.q[k].length + "  ·  qid = " + k);
-    c.add("q-m2", "changed");
+  function qNextDue(st) {
+    var next = Infinity;
+    st.q.forEach(function (q) { if (q.length) next = Math.min(next, q[0]._due); });
+    return next;
   }
   function qDeliver(c, el) {
     var st = c.p.state, f = el._f;
     el.remove();
+    if (!f) return;
     st.cnt[f]++;
     c.text("q-c" + f, String(st.cnt[f]));
     c.add("q-c" + f, "changed");
@@ -637,36 +660,58 @@
     var st = c.p.state;
     [1, 2].forEach(function (k) {
       var q = st.q[k];
-      if (q.length) c.text("q-w" + k, "waiting " + fmtMs(st.tick - q[0]._enq) + " ms");
+      if (q.length) c.text("q-w" + k, "waiting " + fmtUs(st.now - q[0]._enq) + " µs");
     });
   }
-  // one tick: the scheduler sends one packet on its way to Host 1
-  async function qServe(c) {
+  // port 1 is free: it takes the head of the highest due queue (waiting for
+  // the earliest due time if no head is due yet); returns the packet or null
+  function qTake(c) {
     var st = c.p.state;
-    await qTick(c);
     qWaiting(c);
-    var k = qPick(st), held = -1;
+    var k = qPick(st);
+    if (k < 0) {
+      var next = qNextDue(st);
+      if (next === Infinity) return null;
+      st.now = next;
+      qShowTime(c);
+      k = qPick(st);
+    }
+    var held = -1;
     for (var h = 7; h > k; h--) { if (st.q[h].length) { held = h; break; } }
     if (held >= 0) {
-      c.text("q-ready", "q" + held + " due at " + fmtMs(st.q[held][0]._due) + " ms");
+      c.text("q-ready", "q" + held + " due at " + fmtUs(st.q[held][0]._due) + " µs");
       c.show("q-ready");
     } else {
       c.hide("q-ready");
     }
-    if (k < 0) return;
     if (k === 1 || k === 2) { c.hide("q-w" + k); c.rm("q-l" + k, "wait"); }
-    c.add("q-l" + k);
-    var el = st.q[k].shift(), y = qLaneY(k);
-    qDeqMeta(c, el, k);
-    // packets keep flying while the next tick starts; a jump to another step aborts them
-    var lane = qLane(c, k, 320);
-    var fly = qFly(c, el, [[el._x, y], [606, y], [628, QY], [910, QY], [910, 350]], 1500)
-      .then(function () { qDeliver(c, el); });
-    st.flights.push(lane.catch(noop), fly.catch(noop));
-    await c.wait(650);
-    c.rm("q-l" + k);
+    var el = st.q[k].shift();
+    el._k = k;
+    c.text("q-m2", "deq_timedelta = " + fmtNs(st.now - el._enq) + "  ·  deq_qdepth = " + st.q[k].length + "  ·  qid = " + k);
+    c.add("q-m2", "changed");
+    st.busyFrom = st.now;
+    st.now += FT;
+    c.text("q-st", "sending");
+    c.add("q-st", "changed");
+    return el;
   }
-  function noop() {}
+  // port 1 finishes its frame, takes the next packet and starts to send it
+  async function qServe(c) {
+    var st = c.p.state;
+    await qFinish(c);
+    var el = qTake(c);
+    if (!el) return;
+    var k = el._k, y = qLaneY(k);
+    c.add("q-l" + k);
+    st.flights.push(qLane(c, k, 320).catch(noop));
+    c.add("q-eg");
+    await qFly(c, el, [[el._x, y], [606, y], [628, QY], [910, QY]], 900);
+    c.rm("q-l" + k);
+    c.rm("q-eg");
+    st.wire = el;
+    await qWire(c, 0, 0.6, 360);
+    st.wireFrac = 0.6;
+  }
   async function qFlights(c) {
     var st = c.p.state, f = st.flights;
     st.flights = [];
@@ -677,11 +722,6 @@
     for (var i = 0; i < n; i++) await qServe(c);
     await qFlights(c);
   }
-  function qStagger(c, flows, gap, ms) {
-    return Promise.all(flows.map(function (f, i) {
-      return c.wait(i * gap).then(function () { return qArrive(c, f, ms); });
-    }));
-  }
 
   // Each step is deterministic, so its end state is simply the step run instantly.
   var chapterQueues = {
@@ -689,10 +729,16 @@
       var st = c.p.state;
       $("q-pkts").textContent = "";
       st.q = []; st.last = []; st.rate = [];
-      for (var k = 0; k < 8; k++) { st.q.push([]); st.last.push(-Infinity); st.rate.push(1000); }
+      for (var k = 0; k < 8; k++) { st.q.push([]); st.last.push(-Infinity); st.rate.push(Infinity); }
       st.cnt = [0, 0, 0, 0];
-      st.tick = 0; st.t = 0; st.angle = 0; st.drop = 0; st.cap = Infinity; st.flights = [];
-      $("q-clock").querySelector(".clock-hand").setAttribute("transform", "rotate(0 702 182)");
+      st.t = 0; st.drop = 0; st.cap = Infinity; st.flights = [];
+      // port 1 is sending an earlier frame, from 0 to FT
+      st.busyFrom = 0; st.now = FT;
+      st.wire = qMake(0);
+      qPos(st.wire, 910, QY);
+      st.wireFrac = 0.35;
+      $("q-wire").setAttribute("width", (WIRE_W * st.wireFrac).toFixed(1));
+      c.add("q-st", "changed");
     },
     steps: [
       { // 01 three flows, three priorities
@@ -703,21 +749,21 @@
           await c.wait(900);
         }
       },
-      { // 02 eight queues per port; the queues fill
+      { // 02 eight queues per port; the queues fill while port 1 is busy
         run: async function (c) {
           lit(c, ["q-tm"]);
           await qStagger(c, [3, 1, 3, 2, 1], 300, 1100);
           await c.wait(1300);
         }
       },
-      { // 03 one packet per tick, highest ready queue first
+      { // 03 port 1 takes the next packet when it is free, highest ready queue first
         run: async function (c) {
-          lit(c, ["q-sch"]);
+          lit(c, ["q-sch", "q-tx"]);
           await qServeN(c, 4);
           await c.wait(900);
         }
       },
-      { // 04 strict priority: queue 3 wins every tick
+      { // 04 strict priority: queue 3 wins every time the port is free
         run: async function (c) {
           lit(c, ["q-sch"]);
           c.add("q-l2", "wait"); c.add("q-l1", "wait");
@@ -731,10 +777,10 @@
           await c.wait(900);
         }
       },
-      { // 05 queue 3 limited to 500 pps
+      { // 05 queue 3 limited to 6 000 pps: one every two frame times
         run: async function (c) {
           lit(c, ["q-sch"]);
-          c.p.state.rate[3] = 500;
+          c.p.state.rate[3] = 6000;
           c.show("q-rate");
           await c.wait(500);
           await qStagger(c, [3, 3], 300, 900);
@@ -753,30 +799,69 @@
           await c.wait(1300);
         }
       },
-      { // 07 dequeue metadata, egress, the port's TX queue and the link
+      { // 07 dequeue metadata, egress and deparser, the frame on the wire
         run: async function (c) {
           var st = c.p.state;
-          lit(c, ["q-sch"]);
-          await qTick(c);
-          var k = qPick(st);
-          if (k < 0) return;
+          lit(c, ["q-sch", "q-tx"]);
+          await qFinish(c);
+          await qFlights(c);
+          var el = qTake(c);
+          if (!el) return;
+          var k = el._k, y = qLaneY(k);
           c.add("q-l" + k);
-          var el = st.q[k].shift(), y = qLaneY(k);
-          qDeqMeta(c, el, k);
           await Promise.all([qLane(c, k, 320), qFly(c, el, [[el._x, y], [606, y], [628, QY], [821, QY]], 1100)]);
           c.rm("q-l" + k);
           lit(c, ["q-eg", "q-meta"]);
           await c.wait(1000);
           await qFly(c, el, [[821, QY], [910, QY]], 600);
           lit(c, ["q-tx"]);
-          c.add("q-txl");
-          await c.wait(700);
-          c.rm("q-txl");
+          st.wire = el;
+          await qWire(c, 0, 1, 900);
+          st.wireFrac = 1;
           c.add("q-link");
-          await qFly(c, el, [[910, QY], [910, 350]], 800);
-          qDeliver(c, el);
+          await qFinish(c, 800);
+          await qFlights(c);
           lit(c, ["q-h1"]);
-          await c.wait(1500);
+          await c.wait(900);
+          // port 1 is free and q1 still holds packets: it takes the next one
+          lit(c, ["q-sch"]);
+          await qServe(c);
+          await c.wait(900);
+        }
+      },
+      { // 08 SwitchRate 10 000 pps: the pipeline takes one packet per 100 µs
+        run: async function (c) {
+          var st = c.p.state, flows = [2, 3, 1], els = [], gap = 100;
+          lit(c, ["q-ing"]);
+          c.add("q-in", "on-amber");
+          c.text("q-inl", "pipeline: 1 per 100 µs");
+          c.add("q-inl", "changed");
+          await c.wait(500);
+          var t0 = Math.max(st.t, st.busyFrom) + DT;
+          flows.forEach(function (f, i) {
+            var el = qMake(f);
+            el._arr = t0 + i * DT;
+            qPos(el, 96, QY);
+            els.push(el);
+          });
+          st.t = t0 + 2 * DT;
+          // the first finds the pipeline idle and passes at once; the others wait
+          var first = qEnter(c, els[0], 2, els[0]._arr, [[96, QY], [290, QY], [308, qLaneY(2)]], 1300);
+          await c.wait(350);
+          await Promise.all([
+            qFly(c, els[1], [[96, QY], [qInX(0), QY]], 700),
+            c.wait(250).then(function () { return qFly(c, els[2], [[96, QY], [qInX(1), QY]], 650); })
+          ]);
+          await first;
+          for (var i = 1; i < 3; i++) {
+            await c.wait(700);
+            var el = els[i], f = flows[i], tIn = t0 + i * gap;
+            st.t = Math.max(st.t, tIn);
+            var moves = [qEnter(c, el, f, tIn, [[el._x, QY], [290, QY], [308, qLaneY(f)]], 1000)];
+            if (i === 1) moves.push(qFly(c, els[2], [[els[2]._x, QY], [qInX(0), QY]], 300));
+            await Promise.all(moves);
+          }
+          await c.wait(1300);
         }
       }
     ]
@@ -970,21 +1055,24 @@
 
   // ======================================================================
   // Chapter 3, live model: a small discrete-event simulation of the same rules
-  // for one output port (flow f uses queue f), followed by the port's ns-3 TX
-  // queue (DropTail, 100 packets) and the link.
+  // for one output port (flow f uses queue f). With SwitchRate > 0, packets
+  // first wait in the input buffer (FIFO, 128 packets) for the pipeline, which
+  // takes one per 1 / SwitchRate and takes a packet at once when it is idle.
+  // Port 1 sends one frame at a time at the link's data rate; when it is free,
+  // it takes the highest queue whose head is due.
   // ======================================================================
   var LINKS = [1, 2, 5, 10, 20, 50, 100, 1000];               // Mbps
   var FRAME_BITS = (1000 + 8 + 20 + 14) * 8;                 // 1000-byte payload + UDP, IPv4, Ethernet
-  var TX_CAP = 100, BIN = 0.2, NBINS = 50;                    // 50 bins of 0.2 s = the last 10 s
+  var IN_CAP = 128, BIN = 0.2, NBINS = 50;                    // 50 bins of 0.2 s = the last 10 s
   var CW = 560, CX0 = 44, CX1 = 478, CY0 = 12, CY1 = 176;     // chart geometry (viewBox 560 x 206)
-  var BASE = { r1: 375, r2: 500, r3: 625, sw: 1000, cap: 128, lim: false, limr: 300, link: 7 };
+  var BASE = { r1: 300, r2: 600, r3: 700, sw: 0, cap: 128, lim: false, limr: 250, link: 3 };
   var PRESETS = {
-    starve: { note: "The three flows offer 1500 packets per second, but SwitchRate is 1000. Strict priority serves all of flow 3 and 375 of flow 2's 500 packets; flow 1 gets nothing, so queue 1 fills up and drops every new packet." },
-    limit: { lim: true, note: "Queue 3 may send only 300 packets per second. Whenever its next packet is not due yet, the scheduler serves a lower queue: flow 2 now gets all 500 packets and flow 1 the remaining 200, while queues 3 and 1 overflow." },
-    light: { r1: 200, r2: 250, r3: 300, note: "750 packets per second is below SwitchRate. Each packet leaves within a tick or two, the queues stay almost empty, and priority hardly matters." },
-    link: { link: 2, note: "The link carries 5 Mbps, about 600 packets per second, less than the switch sends. The TX queue behind the switch fills and drops packets in arrival order, so even flow 3, the highest priority, now loses packets." }
+    starve: { note: "Port 1's 10 Mbps link sends about 1200 packets per second; the flows offer 1600. Strict priority serves all 700 of flow 3 and the remaining 500 of flow 2's 600; flow 1 gets nothing, so queue 1 fills up and drops every new packet." },
+    limit: { lim: true, note: "Queue 3 may send only 250 packets per second. Whenever its next packet is not due yet, port 1 takes a lower queue: flows 2 and 1 now get all they offer, while queue 3 overflows." },
+    light: { r1: 200, r2: 250, r3: 300, note: "750 packets per second is well below the 1200 that port 1 can send. A packet waits at most for the frame on the wire and the few packets just before it, the queues stay almost empty, and priority hardly matters." },
+    pipe: { sw: 1000, note: "SwitchRate 1000 makes the pipeline slower than the link. The packets now wait in the input buffer, in arrival order and without priorities, and a full buffer drops whatever arrives: flow 3 loses packets too, and how many each flow keeps depends on when its packets arrive, not on its priority. The output queues stay almost empty." }
   };
-  var CUSTOM_NOTE = "Your own settings: watch which queue grows, where packets are dropped and how long they wait.";
+  var CUSTOM_NOTE = "Your own settings: watch where packets wait, where they are dropped and how long they wait.";
 
   function el(tag, cls, text) {
     var e = document.createElement(tag);
@@ -1008,7 +1096,7 @@
     var wants = !reduced(), visible = false, loop = 0, lastTable = 0;
     var hoverBack = null, chartDirty = true;
 
-    // ----- fixed parts: queue lanes, legend, table rows -----
+    // ----- fixed parts: input buffer and queue lanes, legend, table rows -----
     var lanesBox = root.querySelector(".sb-lanes"), lanes = [];
     function addLane(label, fillCls, rowCls) {
       var row = el("div", "sb-lane" + (rowCls ? " " + rowCls : ""));
@@ -1021,8 +1109,8 @@
       lanesBox.appendChild(row);
       return { fill: fill, val: val };
     }
+    var inLane = addLane("in", "", "in");
     for (var k = 7; k >= 0; k--) lanes[k] = addLane("q" + k, k >= 1 && k <= 3 ? "f" + k : "");
-    var txLane = addLane("TX", "", "tx");
 
     var legend = root.querySelector(".sb-legend");
     [1, 2, 3].forEach(function (f) {
@@ -1033,7 +1121,7 @@
     });
     var refLi = el("li");
     refLi.appendChild(el("i", "ref-key"));
-    refLi.appendChild(document.createTextNode("SwitchRate"));
+    refLi.appendChild(document.createTextNode("port 1 line rate"));
     legend.appendChild(refLi);
 
     var tbody = root.querySelector(".sb-table tbody"), cells = [];
@@ -1043,7 +1131,7 @@
       first.appendChild(document.createTextNode("Flow " + f + " · :" + (1000 + 1000 * f) + " → q" + f));
       tr.appendChild(first);
       cells[f] = [];
-      for (var i = 0; i < 5; i++) { var td = el("td"); tr.appendChild(td); cells[f].push(td); }
+      for (var i = 0; i < 6; i++) { var td = el("td"); tr.appendChild(td); cells[f].push(td); }
       tbody.appendChild(tr);
     });
 
@@ -1053,6 +1141,7 @@
       if (o) o.textContent = text;
     }
     function pps(v) { return v >= 10000 ? Math.round(v / 1000) + "k" : String(Math.round(v)); }
+    function linePps() { return P.link * 1e6 / FRAME_BITS; }
     function read() {
       P.rate = [0, +inp("r1").value, +inp("r2").value, +inp("r3").value];
       P.sw = +inp("sw").value;
@@ -1062,10 +1151,10 @@
       P.link = LINKS[+inp("link").value];
       inp("limr").disabled = !P.lim;
       for (var f = 1; f <= 3; f++) out("r" + f, P.rate[f] + " pps");
-      out("sw", P.sw + " pps");
+      out("sw", P.sw ? P.sw + " pps" : "0 = no limit");
       out("cap", P.cap + " packets");
       out("limr", P.limr + " pps");
-      out("link", P.link + " Mbps ≈ " + pps(P.link * 1e6 / FRAME_BITS) + " pps");
+      out("link", P.link + " Mbps ≈ " + pps(linePps()) + " pps");
       chartDirty = true;
     }
     function setPreset(name) {
@@ -1084,19 +1173,20 @@
       draw(true);
     }
 
-    // ----- the model -----
-    function newBin(i) { return { i: i, n: [0, 0, 0, 0], d: [0, 0, 0, 0], dn: [0, 0, 0, 0] }; }
+    // ----- the model (times in s) -----
+    function newBin(i) { return { i: i, n: [0, 0, 0, 0], d: [0, 0, 0, 0], dn: [0, 0, 0, 0], w: [0, 0, 0, 0], wn: [0, 0, 0, 0] }; }
     function restart() {
       S = {
-        now: 0, nextTick: 1 / P.sw, next: [Infinity, 0, 0, 0], q: [], last: [],
-        tx: [], txCur: null, txDone: Infinity,
-        drop: [0, 0, 0, 0], txDrop: [0, 0, 0, 0], bins: [], cur: newBin(0)
+        now: 0, next: [Infinity, 0, 0, 0],
+        inq: [], pipeFree: 0, pipeEvt: Infinity,
+        q: [], last: [], busy: false, txCur: null, txDone: Infinity, retry: Infinity,
+        inDrop: [0, 0, 0, 0], drop: [0, 0, 0, 0], bins: [], cur: newBin(0)
       };
       for (var k = 0; k < 8; k++) { S.q.push([]); S.last.push(-Infinity); }
       for (var f = 1; f <= 3; f++) S.next[f] = P.rate[f] > 0 ? f * 0.0003 : Infinity;
       chartDirty = true;
     }
-    function queueRate(k) { return k === 3 && P.lim ? P.limr : P.sw; }
+    function queueRate(k) { return k === 3 && P.lim ? P.limr : Infinity; }
     function roll(t) {
       while (t >= (S.cur.i + 1) * BIN) {
         S.bins.push(S.cur);
@@ -1105,47 +1195,77 @@
         chartDirty = true;
       }
     }
+    // the pipeline hands the packet to its output queue (tail drop)
+    function toQueue(p) {
+      var k = p.f, q = S.q[k];
+      if (q.length >= P.cap) { S.drop[k]++; return; }
+      var due = Math.max(S.now, S.last[k] + 1 / queueRate(k));
+      S.last[k] = due;
+      q.push({ f: p.f, enq: S.now, due: due });
+      tryPort();
+    }
+    // the pipeline takes the oldest packet of the input buffer
+    function serveIngress() {
+      S.pipeEvt = Infinity;
+      if (!S.inq.length) return;
+      var p = S.inq.shift();
+      S.cur.w[p.f] += S.now - p.t;
+      S.cur.wn[p.f]++;
+      S.pipeFree = S.now + 1 / P.sw;
+      if (S.inq.length) S.pipeEvt = S.pipeFree;
+      toQueue(p);
+    }
     function arrive(f) {
       S.next[f] = P.rate[f] > 0 ? S.now + 1 / P.rate[f] : Infinity;
-      var q = S.q[f];
-      if (q.length >= P.cap) { S.drop[f]++; return; }        // tail drop
-      var due = Math.max(S.now, S.last[f] + 1 / queueRate(f));
-      S.last[f] = due;
-      q.push({ f: f, enq: S.now, due: due });
+      var p = { f: f, t: S.now };
+      if (!P.sw) { toQueue(p); return; }   // no limit: the pipeline takes it at once
+      if (S.inq.length >= IN_CAP) { S.inDrop[f]++; return; }
+      S.inq.push(p);
+      if (S.pipeEvt === Infinity) {
+        if (S.now >= S.pipeFree) serveIngress();
+        else S.pipeEvt = S.pipeFree;
+      }
     }
-    function transmit(p) { S.txCur = p; S.txDone = S.now + FRAME_BITS / (P.link * 1e6); }
-    function tick() {
-      S.nextTick += 1 / P.sw;
+    // port 1 is free: it takes the head of the highest due queue, or waits
+    function tryPort() {
+      if (S.busy) return;
+      var next = Infinity;
       for (var k = 7; k >= 0; k--) {
         var q = S.q[k];
-        if (q.length && q[0].due <= S.now + 1e-12) {
+        if (!q.length) continue;
+        if (q[0].due <= S.now + 1e-12) {
           var p = q.shift();
           S.cur.d[p.f] += S.now - p.enq;
           S.cur.dn[p.f]++;
-          if (!S.txCur) transmit(p);
-          else if (S.tx.length >= TX_CAP) S.txDrop[p.f]++;
-          else S.tx.push(p);
+          S.busy = true;
+          S.txCur = p;
+          S.txDone = S.now + FRAME_BITS / (P.link * 1e6);
+          S.retry = Infinity;
           return;
         }
+        next = Math.min(next, q[0].due);
       }
+      S.retry = next;
     }
-    function linkDone() {
+    function txDone() {
       S.cur.n[S.txCur.f]++;
+      S.busy = false;
       S.txCur = null;
       S.txDone = Infinity;
-      if (S.tx.length) transmit(S.tx.shift());
+      tryPort();
     }
     function advance(to) {
       for (;;) {
         var fa = 1;
         if (S.next[2] < S.next[fa]) fa = 2;
         if (S.next[3] < S.next[fa]) fa = 3;
-        var t = Math.min(S.next[fa], S.nextTick, S.txDone);
+        var t = Math.min(S.next[fa], S.pipeEvt, S.txDone, S.retry);
         if (t > to) break;
         roll(t);
         S.now = t;
-        if (t === S.txDone) linkDone();
-        else if (t === S.nextTick) tick();
+        if (t === S.txDone) txDone();
+        else if (t === S.retry) { S.retry = Infinity; tryPort(); }
+        else if (t === S.pipeEvt) serveIngress();
         else arrive(fa);
       }
       roll(to);
@@ -1154,38 +1274,40 @@
 
     // ----- drawing -----
     function recent() {
-      var b = S.bins.slice(-5), r = { n: [0, 0, 0, 0], d: [0, 0, 0, 0], dn: [0, 0, 0, 0], secs: b.length * BIN };
+      var b = S.bins.slice(-5), r = { n: [0, 0, 0, 0], d: [0, 0, 0, 0], dn: [0, 0, 0, 0], w: [0, 0, 0, 0], wn: [0, 0, 0, 0], secs: b.length * BIN };
       b.forEach(function (x) {
-        for (var f = 1; f <= 3; f++) { r.n[f] += x.n[f]; r.d[f] += x.d[f]; r.dn[f] += x.dn[f]; }
+        for (var f = 1; f <= 3; f++) { r.n[f] += x.n[f]; r.d[f] += x.d[f]; r.dn[f] += x.dn[f]; r.w[f] += x.w[f]; r.wn[f] += x.wn[f]; }
       });
       return r;
     }
     function draw(full) {
+      var m = S.inq.length;
+      inLane.fill.style.width = Math.min(100, m / IN_CAP * 100) + "%";
+      inLane.val.textContent = m + " / " + IN_CAP;
+      inLane.val.classList.toggle("full", m >= IN_CAP);
       for (var k = 0; k < 8; k++) {
         var n = S.q[k].length;
         lanes[k].fill.style.width = Math.min(100, n / P.cap * 100) + "%";
         lanes[k].val.textContent = n + " / " + P.cap;
         lanes[k].val.classList.toggle("full", n >= P.cap);
       }
-      var tn = S.tx.length;
-      txLane.fill.style.width = (tn / TX_CAP * 100) + "%";
-      txLane.val.textContent = tn + " / " + TX_CAP;
-      txLane.val.classList.toggle("full", tn >= TX_CAP);
       clockEl.textContent = "t = " + S.now.toFixed(1) + " s";
       if (chartDirty) { chartDirty = false; drawChart(); }
       if (full) drawTable();
     }
+    function ms(x) { return x < 0.0095 ? (x * 1000).toFixed(2) + " ms" : (x * 1000).toFixed(1) + " ms"; }
     function drawTable() {
       var r = recent();
       for (var f = 1; f <= 3; f++) {
         var c = cells[f], q = S.q[f];
         c[0].textContent = P.rate[f] + " pps";
         c[1].textContent = r.secs ? Math.round(r.n[f] / r.secs) + " pps" : "–";
-        c[2].textContent = S.drop[f].toLocaleString("en-US");
-        c[3].textContent = S.txDrop[f].toLocaleString("en-US");
+        c[2].textContent = S.inDrop[f].toLocaleString("en-US");
+        c[3].textContent = S.drop[f].toLocaleString("en-US");
+        c[4].textContent = r.wn[f] ? ms(r.w[f] / r.wn[f]) : "–";
         var starved = !r.dn[f] && q.length > 0;
-        c[4].classList.toggle("warn", starved);
-        c[4].textContent = r.dn[f] ? (r.d[f] / r.dn[f] * 1000).toFixed(1) + " ms"
+        c[5].classList.toggle("warn", starved);
+        c[5].textContent = r.dn[f] ? ms(r.d[f] / r.dn[f])
           : starved ? "starved, " + (S.now - q[0].enq).toFixed(1) + " s" : "–";
       }
     }
@@ -1198,7 +1320,9 @@
       return best || { max: Math.ceil(v / 500) * 500, step: 500 };
     }
     function drawChart() {
-      var sc = niceScale(Math.max(P.sw, P.rate[1], P.rate[2], P.rate[3], 100) * 1.08);
+      var line = linePps(), top = Math.max(P.rate[1], P.rate[2], P.rate[3], 100);
+      if (line <= 2500) top = Math.max(top, line);
+      var sc = niceScale(top * 1.08);
       var b = S.bins, n = b.length, dx = (CX1 - CX0) / (NBINS - 1);
       var X = function (j) { return CX1 - (n - 1 - j) * dx; };
       var Y = function (v) { return CY1 - Math.min(v, sc.max) / sc.max * (CY1 - CY0); };
@@ -1212,8 +1336,10 @@
       h.push('<text x="' + CX0 + '" y="194">−10 s</text>');
       h.push('<text x="' + ((CX0 + CX1) / 2) + '" y="194" text-anchor="middle">−5 s</text>');
       h.push('<text x="' + CX1 + '" y="194" text-anchor="end">now</text>');
-      var ysw = Y(P.sw).toFixed(1);
-      h.push('<line class="ref" x1="' + CX0 + '" x2="' + CX1 + '" y1="' + ysw + '" y2="' + ysw + '"/>');
+      if (line <= sc.max) {
+        var yl = Y(line).toFixed(1);
+        h.push('<line class="ref" x1="' + CX0 + '" x2="' + CX1 + '" y1="' + yl + '" y2="' + yl + '"/>');
+      }
       if (n) {
         var r = recent(), ends = [];
         for (var f = 1; f <= 3; f++) {
@@ -1294,13 +1420,20 @@
     });
     form.addEventListener("submit", function (e) { e.preventDefault(); });
     form.addEventListener("input", function () {
-      var oldSw = P.sw, oldRate = P.rate.slice();
+      var oldRate = P.rate.slice();
       read();
       for (var f = 1; f <= 3; f++) {
         if (P.rate[f] <= 0) S.next[f] = Infinity;
         else if (S.next[f] === Infinity || P.rate[f] !== oldRate[f]) S.next[f] = S.now + 1 / P.rate[f];
       }
-      if (P.sw !== oldSw) S.nextTick = S.now + 1 / P.sw;
+      if (!P.sw) {
+        // no limit any more: the pipeline takes every waiting packet at once
+        S.pipeEvt = Infinity;
+        while (S.inq.length) { var p = S.inq.shift(); S.cur.w[p.f] += S.now - p.t; S.cur.wn[p.f]++; toQueue(p); }
+      } else if (S.inq.length && S.pipeEvt === Infinity) {
+        S.pipeEvt = Math.max(S.now, S.pipeFree);
+      }
+      if (!S.busy) tryPort();
       setPreset(null);
       draw(true);
     });

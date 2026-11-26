@@ -13,6 +13,20 @@ The P4sim project site is a hand-written static sub-site of this Hexo blog. This
 
 ## Change log
 
+### 2026-11-26 · Inside the switch for P4sim 2.0
+
+Redraws the queue parts of `/p4sim/inside/` for the event-driven egress of P4sim 2.0 (`doc/event-driven-tm-scheduler.md`, `p4-core-v1model.cc`, `p4-switch-core.cc`, `utils/p4-queue.h` on `main` at `488dd6b`) and removes the version note.
+
+- Chapter 2, step 5: "port 3 free → next" replaces the clock; the steps mention `PipelineDelay` and that the input buffer only holds packets while `SwitchRate` keeps the pipeline busy.
+- Chapter 3 (8 steps instead of 7):
+  - Host 0 sends at 1 Gbps and port 1 sends at 100 Mbps (as in `p4-priority-queues`), with the classification of `qos.p4`.
+  - "Next packet" replaces the scheduler and its clock: port 1 sends one frame at a time (83.36 µs), and when it is free it takes the highest queue whose head is due.
+  - The port box shows the frame on the wire, instead of an ns-3 TX queue. Times are in µs on the stage, in ns in the metadata.
+  - The queue 3 limit is now 6 000 pps (two frame times).
+  - Step 7 mentions `TransferBufferSize`. The new step 8 shows `SwitchRate`: packets wait in the input buffer, in arrival order.
+- Live model: `SwitchRate` 0–2000 (0 = no limit) feeds an input buffer of 128 packets. The port sends at the link's data rate, and there is no TX queue any more. The table gets "Dropped: input" and "Input wait". The presets are recomputed, and "Slower pipeline" replaces "Slow link".
+- `inside.css`: no clock styles; new styles for the bar of the frame on the wire, the earlier frame (`.qp.f0`) and the input-buffer lane.
+
 ### 2026-11-26 · P4sim 2.0
 
 Brings the overview and the roadmap up to [release v2.0.0](https://github.com/HapCommSys/p4sim/releases/tag/v2.0.0) (2026-11-20) and to `main` at `488dd6b`. The site describes `main`, which is what `git clone` gives; the roadmap says what is released and what is only on `main`.
@@ -242,22 +256,23 @@ Without JavaScript the step list is shown under the figure. With JavaScript the 
 
 ### The live queue model (chapter 3)
 
-`initSandbox()` in `inside.js` is a small discrete-event simulation of one output port. It follows the same rules as `P4CoreV1model` and `NSQueueingLogicPriRL` (`utils/p4-queue.h`):
+`initSandbox()` in `inside.js` is a small discrete-event simulation of one output port. It follows the same rules as `P4SwitchCore::StartIngress()`, `P4CoreV1model` and `NSQueueingLogicPriRL` (`utils/p4-queue.h`):
 
-- Flow f (UDP ports 2000, 3000, 4000) uses queue f. Each queue holds `QueueBufferSize` packets; a packet arriving at a full queue is dropped.
-- A packet's due time is max(arrival, the queue's previous due time + 1 / queue rate). Every queue rate defaults to `SwitchRate`; the model can limit queue 3, which corresponds to `SetEgressPriorityQueueRate`.
-- A timer ticks every 1 / `SwitchRate`. Each tick dequeues one packet: the head of the highest queue (7 → 0) that is due.
-- After the switch comes the port's TX queue (DropTail, 100 packets, as in ns-3) and a link that sends 1042-byte frames (1000-byte payload plus UDP, IPv4 and Ethernet headers) at the chosen DataRate.
+- Flow f (UDP ports 2000, 3000, 4000) sends constant-rate 1000-byte payloads and uses queue f.
+- With `SwitchRate` 0 the pipeline takes every packet at once. With a rate R, an idle pipeline takes a packet at once and is then busy for 1 / R. Packets that arrive meanwhile wait in the input buffer (FIFO, 128 packets, as `InputBufferSizeLow`) and are dropped when it is full.
+- Each output queue holds `QueueBufferSize` packets; a packet arriving at a full queue is dropped.
+- A packet's due time is max(arrival, the queue's previous due time + 1 / queue rate). Queues have no rate by default; the model can limit queue 3, which corresponds to `set_queue_rate` or `SetEgressPriorityQueueRate`.
+- Port 1 sends one 1042-byte frame at a time (1000-byte payload plus UDP, IPv4 and Ethernet headers) at the chosen DataRate. When it is free, it takes the head of the highest queue (7 → 0) that is due, or waits for the earliest due time. There is no queue after the port (`TransferBufferSize` 0).
 - The model is drawn with `requestAnimationFrame` at 1 simulated second per real second, and pauses when it is off screen.
 
-Expected results of the presets, useful as a regression check after edits:
+Expected results of the presets, useful as a regression check after edits. Measured in the built-in browser after 12–14 s; the default link is 10 Mbps, about 1200 pps:
 
 | Preset | Settings | Delivered pps (flow 1 / 2 / 3) | Notes |
 |---|---|---|---|
-| Default: queue 1 starves | 375 / 500 / 625 pps, SwitchRate 1000, capacity 128 | 0 / 375 / 625 | queues 1 and 2 full; flow 2 waits about 340 ms |
-| Rate-limit queue 3 | as default, queue 3 limited to 300 pps | 200 / 500 / 300 | queues 3 and 1 overflow |
-| Light load | 200 / 250 / 300 pps | 200 / 250 / 300 | queue delays below 2 ms |
-| Slow link | as default, link 5 Mbps (≈ 600 pps) | 0 / ≈ 225 / ≈ 375 | the TX queue is full and drops in arrival order |
+| Default: queue 1 starves | 300 / 600 / 700 pps, `SwitchRate` 0, capacity 128 | 0 / 499 / 700 | queues 1 and 2 full; flow 2 waits about 255 ms |
+| Rate-limit queue 3 | as default, queue 3 limited to 250 pps | 300 / 600 / 250 | queue 3 overflows and waits about 510 ms; the others below 1 ms |
+| Light load | 200 / 250 / 300 pps | 200 / 250 / 300 | queue delays below 0.5 ms |
+| Slower pipeline | as default, `SwitchRate` 1000 | 200 / 300 / 500 | the input buffer is full, waits about 128 ms and drops from every flow; the split follows the arrival times of the constant-rate flows, not the priorities; the output queues stay empty |
 
 ### Colours
 
@@ -282,22 +297,24 @@ Overview and roadmap (checked against v2.0.0 and `main` at `488dd6b`):
 | 20 test suites and what they check | `test/Readme.md` |
 | Roadmap "Next" = commits in `v2.0.0..main`; "Later" and "Ideas" | `git log v2.0.0..main`, `doc/TODO.md`, open p4sim pull requests |
 
-Inside the switch (checked against `4f43a3f`; chapters 2 and 3 show P4sim **1.x**, see the version note on the page):
+Inside the switch (chapters 2 and 3 checked against `main` at `488dd6b`, chapters 1 and 4 against `4f43a3f`):
 
 | Fact on the site | Source in p4sim |
 |---|---|
-| 8 priority queues per port; priority p → queue p; the highest index is served first | `model/p4-core-v1model.cc` (`Enqueue`), `utils/p4-queue.h` |
-| One scheduler (`m_nbEgressThreads = 1`) ticking every 1 / `SwitchRate`; all ports share it | 1.x: `p4-core-v1model.h/.cc` (`SetEgressTimerEvent`, `CalculateScheduleTime`); 2.0 replaced it with the event-driven egress |
-| Defaults: `SwitchRate` 1000 pps; `QueueBufferSize`, `InputBufferSizeLow` and `InputBufferSizeHigh` all 128 | 1.x `model/p4-switch-net-device.cc` attributes; 2.0: `SwitchRate` 0 |
-| Per-queue rates and depths are set through the V1model core (`SetEgressPriorityQueueRate`, `SetEgressQueueDepth`, …), not through `P4Controller` | `p4-core-v1model.cc`, `p4-controller.h` |
-| Queueing metadata `enq_timestamp`, `enq_qdepth`, `deq_timedelta`, `deq_qdepth`, `qid`; times in **nanoseconds** | `P4SwitchCore::GetTimeStamp()` |
-| `p4-queue-test`: UDP ports 2000/3000/4000 → priority 1/2/3; 3/4/5 Mbps; 1000-byte payloads | `examples/p4-queue-test.cc`, `examples/p4src/qos/` |
+| 8 priority queues per port; priority p → queue p; the highest index is served first; a full queue drops the new packet | `model/p4-core-v1model.cc` (`Enqueue`), `utils/p4-queue.h` (`push_front`, `pop_back_for_port`) |
+| A port takes its next packet when it has sent its frame (`PortTxComplete`), from the highest queue whose head is due; the egress runs then; each port has its own state | `doc/event-driven-tm-scheduler.md`, `p4-core-v1model.cc` |
+| Queues have no rate unless one is set (`set_queue_rate`, `SetEgressPriorityQueueRate`); send = max(now, previous send + 1 / rate) | `utils/p4-queue.h`, `doc/switch.md` |
+| `SwitchRate` (default 0 = no limit) limits the whole pipeline: an idle pipeline takes a packet at once, a busy one after 1 / R; packets wait in the input buffer and are dropped when it is full | `P4SwitchCore::StartIngress()`, `ServeIngress()`, `doc/switch.md` |
+| `PipelineDelay` delays a packet once before the queues; `TransferBufferSize` (default 0) is a FIFO after the egress | `doc/switch.md`, `doc/event-driven-tm-scheduler.md` |
+| Defaults: `QueueBufferSize`, `InputBufferSizeLow` and `InputBufferSizeHigh` all 128 | `model/p4-switch-net-device.cc` attributes |
+| Queueing metadata `enq_timestamp`, `enq_qdepth`, `deq_timedelta`, `deq_qdepth` (own queue, after the dequeue), `qid`; times in **nanoseconds** | `P4SwitchCore::GetTimeStamp()`, `p4-core-v1model.cc` |
+| `qos.p4` (`p4-queue-test`): UDP ports 2000/3000/4000 → priority 1/2/3 | `examples/p4src/qos/flowtable_0.txt` |
+| A 1042-byte frame takes 83.36 µs at 100 Mbps; `p4-priority-queues` uses 1 Gbps host links and a 100 Mbps bottleneck | `doc/switch.md` (Timing on the wire), `examples/p4-priority-queues.cc` |
 | Custom headers: protocol number `0xDC`; `LAYER_2`…`LAYER_5`; `ADD_BEFORE`, `REPLACE`, `ADD_AFTER` | `model/custom-header.h`, `model/custom-p2p-net-device.cc` |
 | `basic_tunnel` fields `proto_id` and `dst_id` (16 bits each) | `examples/p4-basic-tunnel.cc`, `examples/p4src/basic_tunnel/` |
 
 ## Open items
 
-- **Inside the switch for 2.0**: redraw chapters 2 and 3 and the live queue model for the event-driven egress (each port takes its next packet when it is free and sends at its line rate; `SwitchRate` limits the whole pipeline, default 0), then remove the version note.
 - **Architecture figure**: replace `assets/p4sim-arch.png` when p4sim pull request #85 merges.
 - **Old blog repository**: archive `Mingyumaz/Hexo-Blog`, delete its `GH_TOKEN` and `GH_USERNAME` secrets, and revoke that personal access token. It is no longer used.
 - **Merged branches**: `merge-hexo-source` and `add-p4sim-how-it-works` can be deleted.
