@@ -9,9 +9,29 @@ The P4sim project site is a hand-written static sub-site of this Hexo blog. This
 | Source | [`source/p4sim/`](../source/p4sim/) in this repository |
 | Generator | Hexo 8.1.2 with the Fluid theme; `source/p4sim/**` is copied as is (`skip_render`) |
 | Publishing | [`.github/workflows/pages.yml`](../.github/workflows/pages.yml), on every push to `main` |
-| Project | [HapCommSys/p4sim](https://github.com/HapCommSys/p4sim); site facts last checked against `main` at `4f43a3f` |
+| Project | [HapCommSys/p4sim](https://github.com/HapCommSys/p4sim); site facts last checked against release v2.0.0 and `main` at `488dd6b` |
 
 ## Change log
+
+### 2026-11-26 · P4sim 2.0
+
+Brings the overview and the roadmap up to [release v2.0.0](https://github.com/HapCommSys/p4sim/releases/tag/v2.0.0) (2026-11-20) and to `main` at `488dd6b`. The site describes `main`, which is what `git clone` gives; the roadmap says what is released and what is only on `main`.
+
+- Overview:
+  - hero facts: ns-3.39 to 3.49, release v2.0.0;
+  - features: the pipeline core, the new controller features, a "Timing and queues" card instead of "Switch-level knobs";
+  - how it works: event-driven egress; bridge ports and switched-Ethernet ports instead of "Arch 1 (main)" and "Arch 2 (switch_channel)"; `P4SwitchArch` 3 in the table;
+  - get started: `install.sh`, Docker and `p4-hello`, as in the p4sim README; no `P4SIM_DIR`, no "Why ns-3.39?" note;
+  - workflow: the code tab uses `SwitchedEthernetHelper` as `p4-v1model-ipv4-forwarding` does now; the flow table and `topo.txt` match the files; the attribute table follows the README (new: `PipelineDelay`, `TransferBufferSize`, `EnableVoqFabric`; `SwitchRate` default 0; `BmLogLevel` default `off`; `ChannelType` and `EnableTracing` deprecated);
+  - examples: all 27, with their self-checks;
+  - testing: 20 suites, grouped; the STF sample shows mirroring and registers; the scope list follows the README's known limitations;
+  - roadmap cards: v1.0, v2.0, Next (on `main`), Later;
+  - people: GSoC 2025 and 2026 and the contributors of the release notes;
+  - footer (all pages): some files are under GPL-2.0-only.
+- Roadmap: v1.1 and v1.2 are gone (their content shipped in 2.0, or is on `main`). v2.0 is released; "Next" lists what `main` has since v2.0.0; "Later" and "Ideas" come from `doc/TODO.md` and open pull request #102.
+- Inside the switch: a version note says that chapters 2 and 3 show the 1.x scheduler; chapter 1 calls its ports bridge ports. The chapters themselves are not redrawn yet (see [Open items](#open-items)).
+- The architecture figure is unchanged. It still names the branches `main` and `switch_channel`; the caption says so. p4sim pull request #85 redraws it.
+- `style.css`: `.split > * { min-width: 0; }`. The STF code block in "Testing" made the overview about 20 px wider than a 375 px phone screen (before this change too); now it scrolls inside its box.
 
 ### 2026-11-16 · "Inside the switch" page
 
@@ -247,22 +267,38 @@ Expected results of the presets, useful as a regression check after edits:
 
 ## Facts to keep in sync with P4sim
 
-The page states these facts. When P4sim changes, check them and update the page and this list.
+The pages state these facts. When P4sim changes, check them and update the pages and this list.
+
+Overview and roadmap (checked against v2.0.0 and `main` at `488dd6b`):
+
+| Fact on the site | Source in p4sim |
+|---|---|
+| Latest release v2.0.0; its highlights, breaking changes, 18 suites (1.0: 6), 23 examples | GitHub release v2.0.0 |
+| ns-3.39 to ns-3.49, tested with ns-3.39 and ns-3.49 and BMv2 1.15.8 (on `main`, not in v2.0.0) | `README.md` (Installation) |
+| Installation: `install.sh` (about 6 minutes on 16 cores), Docker, step by step, VM; no `P4SIM_DIR` | `README.md`, `doc/installation.md` |
+| Attributes and defaults: `SwitchRate` 0, `PipelineDelay` 0, `TransferBufferSize` 0, buffers 128, `BmLogLevel` `off`, `ThriftPort` 0 | `model/p4-switch-net-device.cc`, `README.md` (Switch Parameters) |
+| `P4SwitchArch` 0–3; the pipeline core has no output queue and no packet replication | `README.md` (Supported P4 Architectures) |
+| 27 examples and their descriptions | `doc/examples.md`, `test/examples-to-run.py` |
+| 20 test suites and what they check | `test/Readme.md` |
+| Roadmap "Next" = commits in `v2.0.0..main`; "Later" and "Ideas" | `git log v2.0.0..main`, `doc/TODO.md`, open p4sim pull requests |
+
+Inside the switch (checked against `4f43a3f`; chapters 2 and 3 show P4sim **1.x**, see the version note on the page):
 
 | Fact on the site | Source in p4sim |
 |---|---|
 | 8 priority queues per port; priority p → queue p; the highest index is served first | `model/p4-core-v1model.cc` (`Enqueue`), `utils/p4-queue.h` |
-| One scheduler (`m_nbEgressThreads = 1`) ticking every 1 / `SwitchRate`; all ports share it | `p4-core-v1model.h/.cc` (`SetEgressTimerEvent`, `CalculateScheduleTime`) |
-| Defaults: `SwitchRate` 1000 pps; `QueueBufferSize`, `InputBufferSizeLow` and `InputBufferSizeHigh` all 128 | `model/p4-switch-net-device.cc` attributes |
+| One scheduler (`m_nbEgressThreads = 1`) ticking every 1 / `SwitchRate`; all ports share it | 1.x: `p4-core-v1model.h/.cc` (`SetEgressTimerEvent`, `CalculateScheduleTime`); 2.0 replaced it with the event-driven egress |
+| Defaults: `SwitchRate` 1000 pps; `QueueBufferSize`, `InputBufferSizeLow` and `InputBufferSizeHigh` all 128 | 1.x `model/p4-switch-net-device.cc` attributes; 2.0: `SwitchRate` 0 |
 | Per-queue rates and depths are set through the V1model core (`SetEgressPriorityQueueRate`, `SetEgressQueueDepth`, …), not through `P4Controller` | `p4-core-v1model.cc`, `p4-controller.h` |
 | Queueing metadata `enq_timestamp`, `enq_qdepth`, `deq_timedelta`, `deq_qdepth`, `qid`; times in **nanoseconds** | `P4SwitchCore::GetTimeStamp()` |
 | `p4-queue-test`: UDP ports 2000/3000/4000 → priority 1/2/3; 3/4/5 Mbps; 1000-byte payloads | `examples/p4-queue-test.cc`, `examples/p4src/qos/` |
 | Custom headers: protocol number `0xDC`; `LAYER_2`…`LAYER_5`; `ADD_BEFORE`, `REPLACE`, `ADD_AFTER` | `model/custom-header.h`, `model/custom-p2p-net-device.cc` |
 | `basic_tunnel` fields `proto_id` and `dst_id` (16 bits each) | `examples/p4-basic-tunnel.cc`, `examples/p4src/basic_tunnel/` |
-| Resubmit and recirculate work on `main` (#39); clone and digest are in progress | p4sim pull requests; roadmap v1.1 |
 
 ## Open items
 
+- **Inside the switch for 2.0**: redraw chapters 2 and 3 and the live queue model for the event-driven egress (each port takes its next packet when it is free and sends at its line rate; `SwitchRate` limits the whole pipeline, default 0), then remove the version note.
+- **Architecture figure**: replace `assets/p4sim-arch.png` when p4sim pull request #85 merges.
 - **Old blog repository**: archive `Mingyumaz/Hexo-Blog`, delete its `GH_TOKEN` and `GH_USERNAME` secrets, and revoke that personal access token. It is no longer used.
 - **Merged branches**: `merge-hexo-source` and `add-p4sim-how-it-works` can be deleted.
 - **Optional**: a short explainer video built from the animations (deferred).

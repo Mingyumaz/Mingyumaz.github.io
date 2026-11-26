@@ -64,6 +64,9 @@
       <li><a href="#ch3"><span>03</span>Queues and scheduling</a></li>
       <li><a href="#ch4"><span>04</span>Custom headers</a></li>
     </ol>
+    <aside class="note">
+      <strong>Version note:</strong> chapters 2 and 3 show the timing of P4sim 1.x, where one timer took a packet every 1&#8202;/&#8202;<code>SwitchRate</code> for the whole switch. Since <a href="../roadmap/#v2-0">P4sim 2.0</a> the egress is event-driven: each port takes its next packet when it is free and sends at its line rate, and <code>SwitchRate</code> (default 0, no limit) limits the whole pipeline. These two chapters will be updated; the rest of the page still applies.
+    </aside>
   </div>
 </section>
 
@@ -166,7 +169,7 @@
       <ol class="steps">
         <li class="step-item">
           <button type="button" class="step-title"><span class="n">01</span>A P4 switch is an ns-3 NetDevice</button>
-          <p><code>P4SwitchNetDevice</code> is installed on an ns-3 node like any other device. Its ports are the node's CSMA or point-to-point devices, so hosts and other switches attach over ordinary ns-3 links.</p>
+          <p><code>P4SwitchNetDevice</code> is installed on an ns-3 node like any other device. Here its ports are bridge ports, the node's CSMA or point-to-point devices, so hosts and other switches attach over ordinary ns-3 links. Since 2.0 a switch can also own switched-Ethernet ports.</p>
         </li>
         <li class="step-item">
           <button type="button" class="step-title"><span class="n">02</span>The control plane fills the tables</button>
@@ -377,7 +380,7 @@
   <div class="wrap">
     <p class="eyebrow">Chapter 3 · Queues and scheduling</p>
     <h2>Which packet leaves next?</h2>
-    <p class="section-lead">A closer look at the traffic manager: eight priority queues per port, a scheduler driven by a clock, per-queue rate limits and full queues. Below the walkthrough, a live model lets you try it.</p>
+    <p class="section-lead">A closer look at the traffic manager: eight priority queues per port, a scheduler driven by a clock, per-queue rate limits and full queues. Below the walkthrough, a live model lets you try it. Both show the scheduler of P4sim 1.x (see the version note at the top).</p>
 
     <div class="player" data-player="queues">
       <div class="player-stage">
@@ -750,7 +753,7 @@ device-&gt;<span class="tok-f">SetCustomHeader</span>(h);</code></pre>
       </div>
       <div class="contribute card">
         <h3>Try P4sim</h3>
-        <p>Install it with ns-3.39 and run the examples.</p>
+        <p>Install it with ns-3.39 to ns-3.49 and run the examples.</p>
         <div class="cta cta-tight">
           <a class="btn btn-small btn-primary" href="../#start">Get started</a>
           <a class="btn btn-small" href="https://github.com/HapCommSys/p4sim">GitHub</a>
@@ -764,7 +767,7 @@ device-&gt;<span class="tok-f">SetCustomHeader</span>(h);</code></pre>
 
 <footer class="footer">
   <div class="wrap footer-inner">
-    <p>P4sim is open source under the <a href="https://github.com/HapCommSys/p4sim/blob/main/LICENSE">Apache License 2.0</a>. Developed at <a href="https://github.com/HapCommSys">HapCommSys</a>, TU Dresden.</p>
+    <p>P4sim is open source under the <a href="https://github.com/HapCommSys/p4sim/blob/main/LICENSE">Apache License 2.0</a>; some files are under <a href="https://github.com/HapCommSys/p4sim#license">GPL-2.0-only</a>. Developed at <a href="https://github.com/HapCommSys">HapCommSys</a>, TU Dresden.</p>
     <p><a href="../">P4sim overview</a> · <a href="../roadmap/">Roadmap</a> · <a href="/">Mingyu Ma's homepage</a></p>
   </div>
 </footer>
