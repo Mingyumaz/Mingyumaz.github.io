@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Roadmap · P4sim</title>
-  <meta name="description" content="Where P4sim is heading: the releases of the ns-3 module for BMv2 P4 switches, from v1.0 to the switch-centric v2.0.">
+  <meta name="description" content="Where P4sim is heading: the releases of the ns-3 module for BMv2 P4 switches, from v1.0 and v2.0 to what is on main and planned.">
   <meta name="author" content="Mingyu Ma">
   <link rel="canonical" href="https://mingyumaz.github.io/p4sim/roadmap/">
   <meta property="og:type" content="website">
@@ -81,82 +81,88 @@
           <h2>First public release</h2>
           <ul>
             <li>BMv2 P4 switches inside ns-3, with the <strong>V1model</strong>, <strong>PSA</strong> and <strong>PNA</strong> architectures.</li>
-            <li>Bridge-based switch design (Arch 1): each port is an ns-3 CSMA or point-to-point device.</li>
+            <li>Bridge ports: each port is an <span class="nw">ns-3</span> CSMA or point-to-point device.</li>
             <li>Examples and topology helpers, from tunnels and a firewall to spine-leaf and fat-tree networks.</li>
             <li>Described in the ICNS3 2025 paper, with a reproducibility artifact.</li>
+            <li>The 1.x line stays in the branch <code>main-deprecated</code>, which gets no more changes.</li>
           </ul>
           <p class="release-links"><a href="https://github.com/HapCommSys/p4sim/releases/tag/v1.0.0">Release v1.0.0</a> · <a href="https://github.com/HapCommSys/p4sim-artifact-icns3">Artifact</a></p>
         </article>
       </li>
 
-      <li class="release progress" id="v1-1">
-        <span class="release-dot" aria-hidden="true"></span>
-        <article class="release-card">
-          <div class="release-head">
-            <span class="release-ver">v1.1</span>
-            <span class="status st-progress">In progress</span>
-            <span class="release-when">mostly on main</span>
-          </div>
-          <h2>Stability and control plane</h2>
-          <ul>
-            <li><strong>Runtime control plane:</strong> <code>P4Controller</code> manages table entries, action profiles and more while a simulation runs (GSoC 2025).</li>
-            <li><strong>Fixes:</strong> PNA forwards packets, switch cores are released cleanly, broken examples work again.</li>
-            <li><strong>Testing:</strong> seven test suites, packet tests on all three architectures, and smoke tests for the examples.</li>
-            <li><strong>V1model like simple_switch:</strong> priority queues, resubmit and recirculate done; clone and digest in progress.</li>
-            <li><strong>Faster, parallel runs:</strong> configurable BMv2 log level and automatic Thrift ports.</li>
-          </ul>
-          <p class="release-links"><a href="https://github.com/HapCommSys/p4sim/compare/v1.0.0...main">Changes on main since v1.0.0</a></p>
-        </article>
-      </li>
-
-      <li class="release progress" id="v1-2">
-        <span class="release-dot" aria-hidden="true"></span>
-        <article class="release-card">
-          <div class="release-head">
-            <span class="release-ver">v1.2</span>
-            <span class="status st-progress">In progress</span>
-          </div>
-          <h2>Newer ns-3</h2>
-          <ul>
-            <li><strong>ns-3.49 (C++23)</strong>, maintained next to the ns-3.39 line.</li>
-            <li>BMv2's C++20 build fix sent upstream, so installation needs no manual header patch.</li>
-            <li>Easier builds, without hard-coded library paths.</li>
-          </ul>
-          <p class="release-links"><a href="https://github.com/HapCommSys/p4sim/tree/ns-3.49">ns-3.49 branch</a></p>
-        </article>
-      </li>
-
-      <li class="release planned" id="v2-0">
-        <span class="release-dot" aria-hidden="true"></span>
+      <li class="release done" id="v2-0">
+        <span class="release-dot" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M3.5 8.5l3 3 6-7"/></svg></span>
         <article class="release-card">
           <div class="release-head">
             <span class="release-ver">v2.0</span>
-            <span class="status st-planned">Planned</span>
+            <span class="status st-done">Released</span>
+            <span class="release-when">November 2026</span>
           </div>
-          <h2>Switch-centric architecture</h2>
+          <h2>Ports and timing</h2>
           <ul>
-            <li><strong>Arch 2:</strong> ports belong to the switch and connect through a switched Ethernet channel.</li>
-            <li><strong>Traffic manager:</strong> virtual output queues, priority scheduling and event-driven egress.</li>
-            <li>A <strong>queue timing model</strong>.</li>
-            <li>Automatic processing rate, with no idle polling.</li>
+            <li><strong>Switched-Ethernet ports:</strong> a switch can own full-duplex <code>SwitchedEthernetChannel</code> ports with plain host devices. Bridge ports still work, and both kinds can be mixed.</li>
+            <li><strong>Timing:</strong> event-driven egress for V1model, PSA and PNA, so a congested port sends back to back at its line rate; exact serialisation and optional Ethernet framing. <code>PipelineDelay</code> gives the pipeline a latency, and <code>SwitchRate</code> limits the packet rate of the whole pipeline.</li>
+            <li><strong>Traffic manager</strong> (<code>EnableVoqFabric</code>, V1model): virtual output queues, a fabric scheduler and strict-priority egress queues.</li>
+            <li><strong>Control plane:</strong> <code>simple_switch_CLI</code> and <code>psa_switch_CLI</code> work with the simulated switches; mirroring, clones, <code>digest()</code> and LAG; <code>P4Controller</code> (GSoC 2025) manages flow entries, action profiles and mirroring sessions; <code>EnableSwap</code> swaps the program at run time.</li>
+            <li><strong>Easier use:</strong> no <code>P4SIM_DIR</code>, automatic Thrift ports, the BMv2 log off by default, and a Docker image with the tested setup.</li>
+            <li><strong>Tests:</strong> 18 test suites (1.0 had 6), packet tests in the style of p4c's STF, and 23 examples that run as tests.</li>
+            <li><strong>Breaking changes:</strong> <code>SwitchRate</code> defaults to 0 (no limit) instead of 1000 packets per second, so throughput and delay differ from 1.x; <code>ChannelType</code> and <code>EnableTracing</code> have no effect; the waf build is gone.</li>
           </ul>
-          <p class="release-links"><a href="https://github.com/HapCommSys/p4sim/tree/switch_channel">switch_channel branch</a> (in development)</p>
+          <p class="release-links"><a href="https://github.com/HapCommSys/p4sim/releases/tag/v2.0.0">Release v2.0.0</a> · <a href="https://github.com/HapCommSys/p4sim/compare/v1.0.0...v2.0.0">Changes since v1.0.0</a></p>
         </article>
       </li>
 
-      <li class="release ideas" id="later">
+      <li class="release progress" id="next">
+        <span class="release-dot" aria-hidden="true"></span>
+        <article class="release-card">
+          <div class="release-head">
+            <span class="release-ver">Next</span>
+            <span class="status st-progress">In progress</span>
+            <span class="release-when">on main</span>
+          </div>
+          <h2>Newer ns-3 and a fuller control plane</h2>
+          <ul>
+            <li><strong>ns-3.39 to ns-3.49</strong> from one code base, tested with ns-3.39 and ns-3.49. P4sim builds with a fixed copy of BMv2's spdlog headers, so no manual patch is needed.</li>
+            <li><strong>Transfer buffer</strong> (<code>TransferBufferSize</code>): the hardware port queue after the egress pipeline.</li>
+            <li><strong>Digests in the simulation:</strong> a <code>Digest</code> trace source and a <code>P4Controller</code> callback; the example <code>p4-l2-learning</code> learns its tables from them.</li>
+            <li><strong><code>P4Controller</code> on every architecture</strong>, through the new <code>P4RuntimeApi</code>; errors in a flow table are reported with file and line.</li>
+            <li><strong>PNA</strong> honours <code>PipelineDelay</code> and loads its flow table with <code>bm_CLI</code>; new examples <code>p4-priority-queues</code> and <code>p4-latency</code>.</li>
+            <li><strong>Getting started:</strong> <code>install.sh</code> sets up everything in about 6 minutes on 16 cores; <code>p4-hello</code> and a getting-started guide; every example checks its own result.</li>
+          </ul>
+          <p class="release-links"><a href="https://github.com/HapCommSys/p4sim/compare/v2.0.0...main">Changes on main since v2.0.0</a></p>
+        </article>
+      </li>
+
+      <li class="release planned" id="later">
         <span class="release-dot" aria-hidden="true"></span>
         <article class="release-card">
           <div class="release-head">
             <span class="release-ver">Later</span>
+            <span class="status st-planned">Planned</span>
+          </div>
+          <h2>Closing the gaps</h2>
+          <ul>
+            <li><strong>PSA externs</strong> for PSA and PNA programs (<a href="https://github.com/HapCommSys/p4sim/pull/102">pull request #102</a>, in review).</li>
+            <li><strong>Pipeline core:</strong> multicast, clones, resubmit and recirculation, with the packet replication engine of V1model.</li>
+            <li><strong>BMv2:</strong> fixes for upstream, an optimised build, and finding BMv2 through CMake.</li>
+          </ul>
+        </article>
+      </li>
+
+      <li class="release ideas" id="ideas">
+        <span class="release-dot" aria-hidden="true"></span>
+        <article class="release-card">
+          <div class="release-head">
+            <span class="release-ver">Ideas</span>
             <span class="status st-ideas">Ideas</span>
           </div>
           <h2>Under consideration</h2>
           <ul>
-            <li>Per-table counters and richer tracing.</li>
-            <li>Faster simulations, for example with the BMv2 log off by default.</li>
-            <li>More example scenarios.</li>
+            <li>Cut-through forwarding, which changes the latency but not the throughput.</li>
+            <li>A timing model per pipeline stage.</li>
+            <li>A default size for the transfer buffer, and the transfer buffer with the VOQ traffic manager.</li>
           </ul>
+          <p class="release-links"><a href="https://github.com/HapCommSys/p4sim/blob/main/doc/TODO.md">Open items in doc/TODO.md</a></p>
         </article>
       </li>
 
@@ -177,7 +183,7 @@
 
 <footer class="footer">
   <div class="wrap footer-inner">
-    <p>P4sim is open source under the <a href="https://github.com/HapCommSys/p4sim/blob/main/LICENSE">Apache License 2.0</a>. Developed at <a href="https://github.com/HapCommSys">HapCommSys</a>, TU Dresden.</p>
+    <p>P4sim is open source under the <a href="https://github.com/HapCommSys/p4sim/blob/main/LICENSE">Apache License 2.0</a>; some files are under <a href="https://github.com/HapCommSys/p4sim#license">GPL-2.0-only</a>. Developed at <a href="https://github.com/HapCommSys">HapCommSys</a>, TU Dresden.</p>
     <p><a href="../">P4sim overview</a> · <a href="/">Mingyu Ma's homepage</a></p>
   </div>
 </footer>

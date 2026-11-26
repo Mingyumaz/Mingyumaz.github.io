@@ -99,8 +99,7 @@
 .stage .chip-loop { stroke: rgba(167, 139, 250, 0.6); fill: rgba(167, 139, 250, 0.10); }
 .stage .lane { fill: rgba(255, 255, 255, 0.035); stroke: var(--s-line); stroke-width: 1; transition: stroke 0.3s, fill 0.3s; }
 .stage .row-bg { fill: transparent; transition: fill 0.35s; }
-.stage .clock-face { fill: var(--s-panel); stroke: var(--s-line-2); stroke-width: 1.2; }
-.stage .clock-hand { stroke: var(--s-muted); stroke-width: 1.4; stroke-linecap: round; fill: none; }
+.stage .wirefill { fill: var(--s-amber); opacity: 0.85; }
 
 .stage .wire { fill: none; stroke: var(--s-line-2); stroke-width: 1.6; transition: stroke 0.35s, filter 0.35s; }
 .stage .wire.dash { stroke-dasharray: 4 5; }
@@ -117,8 +116,6 @@
 .stage .row-bg.hit { fill: rgba(245, 181, 68, 0.26); }
 .stage text.changed { fill: var(--s-amber); }
 .stage .t-stage.lit { fill: var(--s-teal); }
-.stage .tick .clock-face { stroke: var(--s-amber); filter: drop-shadow(0 0 6px rgba(245, 181, 68, 0.7)); }
-.stage .tick .clock-hand { stroke: var(--s-amber); }
 @keyframes flow { to { stroke-dashoffset: -12; } }
 
 .stage .fx { opacity: 0; transition: opacity 0.45s; }
@@ -143,6 +140,7 @@
 .stage .qp.f1 rect { fill: var(--f1); }
 .stage .qp.f2 rect { fill: var(--f2); }
 .stage .qp.f3 rect { fill: var(--f3); }
+.stage .qp.f0 rect { fill: var(--s-slate); }
 .stage .qp text { font: 700 8px var(--font-mono); fill: #06101a; }
 .stage .qp.drop rect { fill: #ef4444; }
 .stage #q-r1.hit { fill: rgba(59, 130, 246, 0.3); }
@@ -151,9 +149,6 @@
 .stage .t-red { fill: var(--s-red); }
 .stage .cap-line { fill: none; stroke: var(--s-red); stroke-width: 1.4; stroke-dasharray: 3 3; }
 .stage .lane.wait { stroke: rgba(248, 113, 113, 0.6); fill: rgba(248, 113, 113, 0.07); }
-.stage .clock-marks { stroke: var(--s-line-2); stroke-width: 1; fill: none; }
-.stage #q-clock.tick .clock-face { stroke: var(--s-violet); filter: drop-shadow(0 0 6px rgba(167, 139, 250, 0.7)); }
-.stage #q-clock.tick .clock-hand { stroke: var(--s-violet); }
 
 /* header blocks (chapter 3) */
 .stage .hb { stroke-width: 1.4; }
@@ -266,7 +261,7 @@
 .sb-panel-head { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 10px; font: 600 0.7rem var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--s-muted); }
 .sb-clock { color: var(--s-text); letter-spacing: 0; text-transform: none; font-variant-numeric: tabular-nums; }
 .sb-lane { display: grid; grid-template-columns: 2.4em minmax(0, 1fr) 6.4em; gap: 10px; align-items: center; height: 19px; font: 0.72rem var(--font-mono); color: var(--s-muted); }
-.sb-lane.tx { margin-top: 8px; padding-top: 8px; height: 28px; border-top: 1px dashed var(--s-line); }
+.sb-lane.in { margin-bottom: 8px; padding-bottom: 8px; height: 28px; border-bottom: 1px dashed var(--s-line); }
 .sb-track { height: 10px; overflow: hidden; border-radius: 3px; background: rgba(255, 255, 255, 0.04); box-shadow: inset 0 0 0 1px var(--s-line); }
 .sb-fill { display: block; width: 0; height: 100%; border-radius: 0 4px 4px 0; background: var(--s-slate); }
 .sb-fill.f1 { background: var(--f1); }

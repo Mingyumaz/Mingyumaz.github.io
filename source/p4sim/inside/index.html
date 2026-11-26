@@ -166,7 +166,7 @@
       <ol class="steps">
         <li class="step-item">
           <button type="button" class="step-title"><span class="n">01</span>A P4 switch is an ns-3 NetDevice</button>
-          <p><code>P4SwitchNetDevice</code> is installed on an ns-3 node like any other device. Its ports are the node's CSMA or point-to-point devices, so hosts and other switches attach over ordinary ns-3 links.</p>
+          <p><code>P4SwitchNetDevice</code> is installed on an ns-3 node like any other device. Here its ports are bridge ports, the node's CSMA or point-to-point devices, so hosts and other switches attach over ordinary ns-3 links. Since 2.0 a switch can also own switched-Ethernet ports.</p>
         </li>
         <li class="step-item">
           <button type="button" class="step-title"><span class="n">02</span>The control plane fills the tables</button>
@@ -201,13 +201,13 @@
         <div class="stage">
           <svg viewBox="0 0 864 450" role="img" aria-labelledby="s2-title s2-desc">
             <title id="s2-title">The V1model pipeline in P4sim</title>
-            <desc id="s2-desc">Port 0, input buffer, parser, ingress match-action stages, traffic manager with eight priority queues for port 3, egress stages, deparser and port 3. Configuration comes from ns-3 attributes and from the P4 program. Loops for resubmit, recirculate and egress-to-egress clones run below.</desc>
+            <desc id="s2-desc">Port 0, input buffer, parser, ingress match-action stages, traffic manager with eight priority queues for port 3, egress stages, deparser and port 3. Port 3 takes the next packet whenever it is free. Configuration comes from ns-3 attributes and from the P4 program. Loops for resubmit, recirculate and egress-to-egress clones run below.</desc>
 
             <!-- configuration cards -->
             <rect id="s2-cfg-ns3" class="box alt" x="12" y="14" width="300" height="60" rx="10"/>
             <text class="t-tag t-amber" x="26" y="34">FROM ns-3 ATTRIBUTES</text>
             <rect class="chip" x="26" y="44" width="70" height="20" rx="10"/><text class="t-chip" x="61" y="58" text-anchor="middle">buffers</text>
-            <rect class="chip" x="104" y="44" width="88" height="20" rx="10"/><text class="t-chip" x="148" y="58" text-anchor="middle">SwitchRate</text>
+            <rect class="chip" x="104" y="44" width="88" height="20" rx="10"/><text class="t-chip" x="148" y="58" text-anchor="middle">rate · delay</text>
             <rect class="chip" x="200" y="44" width="54" height="20" rx="10"/><text class="t-chip" x="227" y="58" text-anchor="middle">ports</text>
 
             <rect id="s2-cfg-p4" class="box alt" x="326" y="14" width="526" height="60" rx="10"/>
@@ -265,11 +265,8 @@
               <rect id="s2-q1" class="lane" x="434" y="232" width="118" height="9" rx="2"/><text class="t-qn" x="426" y="239" text-anchor="middle">1</text>
               <rect id="s2-q0" class="lane" x="434" y="243" width="118" height="9" rx="2"/><text class="t-qn" x="426" y="250" text-anchor="middle">0</text>
             </g>
-            <g id="s2-clock">
-              <circle class="clock-face" cx="489" cy="292" r="8"/>
-              <path class="clock-hand" d="M489 292 V286.5 M489 292 L492.5 294"/>
-            </g>
-            <text class="t-sub" x="503" y="296">1 packet every 1 / SwitchRate</text>
+            <rect id="s2-free" class="chip" x="422" y="283" width="114" height="20" rx="10"/>
+            <text class="t-chip" x="479" y="297" text-anchor="middle">port 3 free → next</text>
 
             <rect id="s2-eg" class="box" x="578" y="150" width="120" height="100" rx="10"/>
             <text class="t-label t-small" x="638" y="170" text-anchor="middle">Egress</text>
@@ -341,11 +338,11 @@
       <ol class="steps">
         <li class="step-item">
           <button type="button" class="step-title"><span class="n">01</span>Configured from two sides</button>
-          <p>The compiled P4 program defines the parser graph, the control flow, the actions and the tables. <span class="nw">ns-3</span> attributes set the buffer sizes, the processing rate (<code>SwitchRate</code>) and the ports.</p>
+          <p>The compiled P4 program defines the parser graph, the control flow, the actions and the tables. <span class="nw">ns-3</span> attributes set the buffer sizes, an optional packet rate and latency of the pipeline (<code>SwitchRate</code>, <code>PipelineDelay</code>) and the ports.</p>
         </li>
         <li class="step-item">
           <button type="button" class="step-title"><span class="n">02</span>Wait in the input buffer</button>
-          <p>An arriving packet joins the input buffer. Packets from outside wait in one queue; resubmitted and recirculated packets have their own, higher-priority queue.</p>
+          <p>An arriving packet joins the input buffer. Packets from outside wait in one queue; resubmitted and recirculated packets have their own, higher-priority queue. They wait only while the pipeline is busy, which happens only when <code>SwitchRate</code> limits it.</p>
         </li>
         <li class="step-item">
           <button type="button" class="step-title"><span class="n">03</span>Parse</button>
@@ -357,11 +354,11 @@
         </li>
         <li class="step-item">
           <button type="button" class="step-title"><span class="n">05</span>Queue in the traffic manager</button>
-          <p>The packet joins queue 5 of port 3. An <span class="nw">ns-3</span> timer takes one packet every 1&#8202;/&#8202;<code>SwitchRate</code>, highest queue first: the packet in queue 7 leaves before ours. <a href="#ch3">Chapter 3</a> looks at the queues closely.</p>
+          <p>The packet joins queue 5 of port 3, after <code>PipelineDelay</code> if one is set. Whenever port 3 has sent a frame, it takes the next packet, highest queue first: the packet in queue 7 leaves before ours. <a href="#ch3">Chapter 3</a> looks at the queues closely.</p>
         </li>
         <li class="step-item">
           <button type="button" class="step-title"><span class="n">06</span>Egress, deparse, send</button>
-          <p>Egress tables can still rewrite the packet; the deparser turns the PHV back into bytes, and the packet leaves on port 3. V1model parses once and deparses at the end; PSA adds a deparser after ingress and a parser before egress.</p>
+          <p>The egress runs when port 3 takes the packet. Egress tables can still rewrite it; the deparser turns the PHV back into bytes, and port 3 sends the frame at its link's data rate. V1model parses once and deparses at the end; PSA adds a deparser after ingress and a parser before egress.</p>
         </li>
         <li class="step-item">
           <button type="button" class="step-title"><span class="n">07</span>Copies and loops</button>
@@ -377,17 +374,17 @@
   <div class="wrap">
     <p class="eyebrow">Chapter 3 · Queues and scheduling</p>
     <h2>Which packet leaves next?</h2>
-    <p class="section-lead">A closer look at the traffic manager: eight priority queues per port, a scheduler driven by a clock, per-queue rate limits and full queues. Below the walkthrough, a live model lets you try it.</p>
+    <p class="section-lead">A closer look at the output queues of a port: eight priority queues, a port that takes its next packet when it is free, per-queue rate limits, full queues, and the input buffer before the pipeline. Below the walkthrough, a live model lets you try it.</p>
 
     <div class="player" data-player="queues">
       <div class="player-stage">
         <div class="stage wide">
           <svg viewBox="0 0 960 430" role="img" aria-labelledby="q-title q-desc">
-            <title id="q-title">Priority queues and the scheduler of a P4sim V1model switch</title>
-            <desc id="q-desc">Host 0 sends three UDP flows. The ingress table udp_priority gives them priority 1, 2 and 3. Port 1 has eight queues in the traffic manager; on every tick of its clock the scheduler takes one packet from the highest queue whose head is ready. Packets then pass egress, the port's ns-3 TX queue and the link to Host 1. A panel shows the queueing metadata the switch writes.</desc>
+            <title id="q-title">Priority queues and the egress of a P4sim V1model switch</title>
+            <desc id="q-desc">Host 0 sends three UDP flows over a 1 Gbps link. The input buffer holds packets only while the pipeline is busy; the ingress table udp_priority gives the flows priority 1, 2 and 3. Port 1 has eight output queues. It sends one frame at a time on its 100 Mbps link, and whenever a frame has left, it takes the next packet from the highest queue whose head is ready; the egress and the deparser run then. A panel shows the queueing metadata the switch writes.</desc>
 
             <!-- the three flows -->
-            <text class="t-tag" x="12" y="30">P4-QUEUE-TEST</text>
+            <text class="t-tag" x="12" y="30">QOS.P4</text>
             <rect class="chip" x="116" y="14" width="166" height="24" rx="12"/>
             <g class="qp f1" transform="translate(134 26)"><rect x="-8.5" y="-6" width="17" height="12" rx="3"/><text y="3" text-anchor="middle">1</text></g>
             <text class="t-chip" x="150" y="30">UDP :2000 → priority 1</text>
@@ -397,7 +394,7 @@
             <rect class="chip" x="468" y="14" width="166" height="24" rx="12"/>
             <g class="qp f3" transform="translate(486 26)"><rect x="-8.5" y="-6" width="17" height="12" rx="3"/><text y="3" text-anchor="middle">3</text></g>
             <text class="t-chip" x="502" y="30">UDP :4000 → priority 3</text>
-            <text class="t-sub" x="948" y="30" text-anchor="end">SwitchRate 1000 pps → 1 tick = 1 ms</text>
+            <text class="t-sub" x="948" y="30" text-anchor="end">in 1 Gbps · out 100 Mbps</text>
 
             <!-- wires -->
             <path class="wire" d="M96 228 H116"/>
@@ -406,7 +403,7 @@
             <path class="wire" d="M768 228 H784"/>
             <path class="wire" d="M858 228 H872"/>
             <path id="q-link" class="wire" d="M910 288 V346"/>
-            <text class="t-sub t-tiny" x="902" y="322" text-anchor="end">link · DataRate</text>
+            <text class="t-sub t-tiny" x="902" y="322" text-anchor="end">link · 100 Mbps</text>
 
             <!-- Host 0 -->
             <rect id="q-h0" class="box" x="12" y="178" width="84" height="100" rx="10"/>
@@ -426,12 +423,14 @@
             <text class="t-row" x="132" y="186">dst 3000 → priority 2</text>
             <rect id="q-r3" class="row-bg" x="124" y="193" width="152" height="17" rx="3"/>
             <text class="t-row" x="132" y="205">dst 4000 → priority 3</text>
-            <text class="t-sub t-tiny" x="200" y="262" text-anchor="middle">key: udp.dstPort</text>
-            <text class="t-sub t-tiny" x="200" y="276" text-anchor="middle">action set_priority(p)</text>
+            <rect id="q-in" class="lane" x="124" y="220" width="152" height="16" rx="3"/>
+            <text id="q-inl" class="t-sub t-tiny" x="200" y="250" text-anchor="middle">input buffer · FIFO</text>
+            <text class="t-sub t-tiny" x="200" y="272" text-anchor="middle">key: udp.dstPort</text>
+            <text class="t-sub t-tiny" x="200" y="286" text-anchor="middle">action set_priority(p)</text>
 
-            <!-- traffic manager -->
+            <!-- output queues -->
             <rect id="q-tm" class="box" x="300" y="72" width="316" height="262" rx="12"/>
-            <text class="t-label t-small" x="458" y="92" text-anchor="middle">Traffic manager · port 1</text>
+            <text class="t-label t-small" x="458" y="92" text-anchor="middle">Output queues · port 1</text>
             <text class="t-sub t-tiny" x="458" y="106" text-anchor="middle">priority p → queue p · head on the right</text>
             <rect id="q-l7" class="lane" x="340" y="116" width="256" height="18" rx="3"/><text class="t-qn" x="332" y="128.5" text-anchor="end">q7</text>
             <rect id="q-l6" class="lane" x="340" y="140" width="256" height="18" rx="3"/><text class="t-qn" x="332" y="152.5" text-anchor="end">q6</text>
@@ -443,7 +442,7 @@
             <rect id="q-l0" class="lane" x="340" y="284" width="256" height="18" rx="3"/><text class="t-qn" x="332" y="296.5" text-anchor="end">q0</text>
             <g id="q-rate" class="fx">
               <rect class="chip chip-loop" x="346" y="214" width="78" height="14" rx="7"/>
-              <text class="t-chip t-violet" x="385" y="224.5" text-anchor="middle">≤ 500 pps</text>
+              <text class="t-chip t-violet" x="385" y="224.5" text-anchor="middle">≤ 6 000 pps</text>
             </g>
             <text id="q-ready" class="t-sub t-tiny t-violet fx" x="436" y="224.5">ready</text>
             <text id="q-w2" class="t-sub t-tiny t-red fx" x="346" y="248.5">waiting</text>
@@ -454,19 +453,16 @@
             </g>
             <text id="q-drop" class="t-sub t-red fx" x="458" y="324" text-anchor="middle">dropped</text>
 
-            <!-- scheduler -->
+            <!-- the port takes its next packet -->
             <rect id="q-sch" class="box" x="636" y="112" width="132" height="188" rx="10"/>
-            <text class="t-label t-small" x="702" y="132" text-anchor="middle">Scheduler</text>
-            <text class="t-sub t-tiny" x="702" y="147" text-anchor="middle">one for the switch</text>
-            <g id="q-clock">
-              <circle class="clock-face" cx="702" cy="182" r="16"/>
-              <path class="clock-marks" d="M702 168 V171 M716 182 H713 M702 196 V193 M688 182 H691"/>
-              <path class="clock-hand" d="M702 182 V172 M702 182 L708 186"/>
-            </g>
-            <text class="t-sub t-tiny" x="702" y="213" text-anchor="middle">tick = 1 / SwitchRate</text>
-            <text class="t-sub t-tiny" x="702" y="250" text-anchor="middle">1 packet per tick,</text>
-            <text class="t-sub t-tiny" x="702" y="264" text-anchor="middle">highest ready queue</text>
-            <text id="q-t" class="t-row" x="702" y="288" text-anchor="middle">t = 0 ms</text>
+            <text class="t-label t-small" x="702" y="132" text-anchor="middle">Next packet</text>
+            <text class="t-sub t-tiny" x="702" y="147" text-anchor="middle">port 1 takes one</text>
+            <text class="t-sub t-tiny" x="702" y="161" text-anchor="middle">when it is free</text>
+            <text class="t-sub t-tiny" x="702" y="190" text-anchor="middle">port 1 is</text>
+            <text id="q-st" class="t-row" x="702" y="206" text-anchor="middle">sending</text>
+            <text class="t-sub t-tiny" x="702" y="250" text-anchor="middle">then: highest</text>
+            <text class="t-sub t-tiny" x="702" y="264" text-anchor="middle">ready queue</text>
+            <text id="q-t" class="t-row" x="702" y="288" text-anchor="middle">t = 0 µs</text>
 
             <!-- egress and the port -->
             <rect id="q-eg" class="box" x="784" y="168" width="74" height="120" rx="10"/>
@@ -475,10 +471,11 @@
             <text class="t-sub t-tiny" x="821" y="262" text-anchor="middle">reads deq_*</text>
             <rect id="q-tx" class="box port" x="872" y="168" width="76" height="120" rx="10"/>
             <text class="t-label t-small" x="910" y="188" text-anchor="middle">Port 1</text>
-            <text class="t-sub t-tiny" x="910" y="202" text-anchor="middle">TX queue</text>
-            <rect id="q-txl" class="lane" x="882" y="220" width="56" height="16" rx="3"/>
-            <text class="t-sub t-tiny" x="910" y="256" text-anchor="middle">DropTail</text>
-            <text class="t-sub t-tiny" x="910" y="270" text-anchor="middle">ns-3 device</text>
+            <text class="t-sub t-tiny" x="910" y="202" text-anchor="middle">on the wire</text>
+            <rect id="q-txl" class="lane" x="882" y="244" width="56" height="10" rx="3"/>
+            <rect id="q-wire" class="wirefill" x="882" y="244" width="0" height="10" rx="3"/>
+            <text class="t-sub t-tiny" x="910" y="268" text-anchor="middle">1 frame</text>
+            <text class="t-sub t-tiny" x="910" y="280" text-anchor="middle">at a time</text>
 
             <!-- metadata -->
             <rect id="q-meta" class="box phv" x="116" y="352" width="500" height="66" rx="10"/>
@@ -487,9 +484,9 @@
             <text id="q-m1" class="t-sub" x="130" y="389">enq_timestamp = –  ·  enq_qdepth = –</text>
             <text id="q-m2" class="t-sub" x="130" y="407">deq_timedelta = –  ·  deq_qdepth = –  ·  qid = –</text>
 
-            <text class="t-sub t-tiny" x="702" y="374" text-anchor="middle">one scheduler serves</text>
-            <text class="t-sub t-tiny" x="702" y="388" text-anchor="middle">every port, so they</text>
-            <text class="t-sub t-tiny" x="702" y="402" text-anchor="middle">share SwitchRate</text>
+            <text class="t-sub t-tiny" x="702" y="374" text-anchor="middle">each port takes its</text>
+            <text class="t-sub t-tiny" x="702" y="388" text-anchor="middle">own packets: a busy</text>
+            <text class="t-sub t-tiny" x="702" y="402" text-anchor="middle">port slows no other</text>
 
             <!-- Host 1 -->
             <rect id="q-h1" class="box" x="780" y="346" width="168" height="72" rx="10"/>
@@ -512,23 +509,23 @@
       <ol class="steps">
         <li class="step-item">
           <button type="button" class="step-title"><span class="n">01</span>Three flows, three priorities</button>
-          <p>The <code>p4-queue-test</code> example sends three UDP flows from Host 0 to Host 1. Its P4 program, <code>qos.p4</code>, matches the UDP destination port in the table <code>udp_priority</code> and sets <code>standard_metadata.priority</code>: port 2000 gets priority 1, port 3000 priority 2, port 4000 priority 3.</p>
+          <p>Host 0 sends three UDP flows to Host 1. The P4 program <code>qos.p4</code>, from the example <code>p4-queue-test</code>, matches the UDP destination port in the table <code>udp_priority</code> and sets <code>standard_metadata.priority</code>: port 2000 gets priority 1, port 3000 priority 2, port 4000 priority 3.</p>
         </li>
         <li class="step-item">
           <button type="button" class="step-title"><span class="n">02</span>Eight queues per port</button>
-          <p>Every egress port has eight queues, and priority <em>p</em> goes to queue <em>p</em>. On the way in, the switch writes <code>enq_timestamp</code> and <code>enq_qdepth</code> into the packet's metadata. Packets arrive faster than they leave, so the queues fill.</p>
+          <p>Every egress port has eight output queues, and priority <em>p</em> goes to queue <em>p</em>. On the way in, the switch writes <code>enq_timestamp</code> and <code>enq_qdepth</code> into the packet's metadata. Host 0's link runs at 1&#8239;Gbps and port 1's at 100&#8239;Mbps, so packets arrive up to ten times faster than port 1 can send them, and the queues fill.</p>
         </li>
         <li class="step-item">
-          <button type="button" class="step-title"><span class="n">03</span>One packet per tick</button>
-          <p>The scheduler runs on an <span class="nw">ns-3</span> timer. Every 1&#8202;/&#8202;<code>SwitchRate</code> it takes one packet, from the highest queue whose head is ready: one packet per millisecond with the default 1000 packets per second. There is one scheduler for the whole switch, so all ports share this rate.</p>
+          <button type="button" class="step-title"><span class="n">03</span>The port takes the next packet</button>
+          <p>Port 1 sends one frame at a time: a 1042-byte frame (1000 bytes of payload) takes 83.36&#8239;µs at 100&#8239;Mbps. When its last bit has left, the port takes the next packet, from the highest queue whose head is ready, and runs it through the egress. Each port takes its own packets, so a busy port does not slow down the others.</p>
         </li>
         <li class="step-item">
           <button type="button" class="step-title"><span class="n">04</span>Strict priority can starve</button>
-          <p>By default each queue may send as fast as <code>SwitchRate</code>, so the scheduler is plain strict priority. While queue 3 always has a packet ready, it wins every tick, and the packets in queues 2 and 1 keep waiting.</p>
+          <p>By default the queues have no rate limit, so the port serves them in strict priority. While queue 3 always has a packet ready, it wins every time the port is free, and the packets in queues 2 and 1 keep waiting.</p>
         </li>
         <li class="step-item">
           <button type="button" class="step-title"><span class="n">05</span>Rate limits per queue</button>
-          <p>Each queue can have its own rate. Here queue 3 is limited to 500 packets per second, one every 2&#8239;ms. When its next packet is not due yet, the scheduler serves the next queue down, so flows 2 and 1 get through. The V1model core sets these rates with <code>SetEgressPriorityQueueRate</code>.</p>
+          <p>A queue can have its own rate, set with <code>set_queue_rate</code> in the flow table or <code>SetEgressPriorityQueueRate</code>. Here queue 3 is limited to 6&#8239;000 packets per second, one every 166.7&#8239;µs or two frame times. When its next packet is not due yet, the port takes a lower queue, so flows 2 and 1 get through.</p>
         </li>
         <li class="step-item">
           <button type="button" class="step-title"><span class="n">06</span>A full queue drops</button>
@@ -536,7 +533,11 @@
         </li>
         <li class="step-item">
           <button type="button" class="step-title"><span class="n">07</span>Out of the switch</button>
-          <p>At dequeue the switch writes <code>deq_timedelta</code> (the time spent queued, in nanoseconds in P4sim), <code>deq_qdepth</code> and <code>qid</code>, which egress code can read, for example to mark congestion. The packet then joins the port's <span class="nw">ns-3</span> TX queue, and the link sends it at its <code>DataRate</code>. If the link is slower than the switch, packets wait there instead, in arrival order.</p>
+          <p>When the port takes a packet, the switch writes <code>deq_timedelta</code> (the time in the queue, in nanoseconds in P4sim), <code>deq_qdepth</code> and <code>qid</code>, which egress code can read, for example to mark congestion. The deparser builds the frame, and the port puts it on the wire. By default nothing waits after the egress, so the backlog stays in the priority queues; <code>TransferBufferSize</code> adds a small FIFO there, like the port queue of a hardware switch.</p>
+        </li>
+        <li class="step-item">
+          <button type="button" class="step-title"><span class="n">08</span>A slower pipeline</button>
+          <p><code>SwitchRate</code> (0 by default: no limit) models a slower switch, such as a software switch: the pipeline takes one packet per 1&#8202;/&#8202;<code>SwitchRate</code>. Packets that arrive meanwhile wait in the input buffer, in arrival order and without priorities, and are dropped when it is full (<code>InputBufferSizeLow</code>, 128 packets). Here <code>SwitchRate</code> is 40&#8239;000 packets per second, one per 25&#8239;µs.</p>
         </li>
       </ol>
     </div>
@@ -547,7 +548,7 @@
         <div>
           <p class="eyebrow">Try it</p>
           <h3 id="qsim-title">Play with the queues</h3>
-          <p class="sb-lead">The same rules, simulated in your browser: three constant-rate UDP flows with 1000-byte payloads as in <code>p4-queue-test</code>, port 1's eight queues and scheduler, and its <span class="nw">ns-3</span> TX queue of 100 packets. A simplified model, not <span class="nw">ns-3</span> output.</p>
+          <p class="sb-lead">The same rules, simulated in your browser: three constant-rate UDP flows with 1000-byte payloads, the input buffer before the pipeline (128 packets), port 1's eight queues, and its link to Host 1. A simplified model, not <span class="nw">ns-3</span> output.</p>
         </div>
         <div class="sb-actions">
           <button type="button" class="btn btn-small btn-primary" data-act="run">Pause</button>
@@ -560,7 +561,7 @@
         <button type="button" data-preset="starve" aria-pressed="true">Default: queue 1 starves</button>
         <button type="button" data-preset="limit" aria-pressed="false">Rate-limit queue 3</button>
         <button type="button" data-preset="light" aria-pressed="false">Light load</button>
-        <button type="button" data-preset="link" aria-pressed="false">Slow link</button>
+        <button type="button" data-preset="pipe" aria-pressed="false">Slower pipeline</button>
       </div>
       <p class="sb-note" aria-live="polite"></p>
 
@@ -574,7 +575,7 @@
           </fieldset>
           <fieldset>
             <legend>Switch</legend>
-            <label class="sb-row"><span class="sb-name">SwitchRate</span><input type="range" name="sw" min="100" max="2000" step="50"><output></output></label>
+            <label class="sb-row"><span class="sb-name">SwitchRate</span><input type="range" name="sw" min="0" max="2000" step="50"><output></output></label>
             <label class="sb-row"><span class="sb-name">QueueBufferSize</span><input type="range" name="cap" min="4" max="256" step="4"><output></output></label>
             <label class="sb-check"><input type="checkbox" name="lim"> Limit queue 3</label>
             <label class="sb-row"><span class="sb-name">Queue 3 rate</span><input type="range" name="limr" min="50" max="2000" step="50"><output></output></label>
@@ -587,7 +588,7 @@
 
         <div class="sb-view">
           <div class="sb-panel">
-            <div class="sb-panel-head"><span>Port 1 queues</span><span class="sb-clock">t = 0.0 s</span></div>
+            <div class="sb-panel-head"><span>Input buffer · port 1 queues</span><span class="sb-clock">t = 0.0 s</span></div>
             <div class="sb-lanes"></div>
           </div>
           <div class="sb-panel">
@@ -603,8 +604,8 @@
 
       <div class="sb-table-wrap">
         <table class="sb-table">
-          <caption>Per flow · rates and queue delay over the last second, drops since the start</caption>
-          <thead><tr><th scope="col">Flow</th><th scope="col">Offered</th><th scope="col">Delivered</th><th scope="col">Dropped: switch</th><th scope="col">Dropped: TX</th><th scope="col" title="Average time in the switch queue (deq_timedelta); while a queue is starved, how long its head has waited">Queue delay</th></tr></thead>
+          <caption>Per flow · rates and waiting times over the last second, drops since the start</caption>
+          <thead><tr><th scope="col">Flow</th><th scope="col">Offered</th><th scope="col">Delivered</th><th scope="col">Dropped: input</th><th scope="col">Dropped: queue</th><th scope="col" title="Average time in the input buffer, waiting for the pipeline (SwitchRate)">Input wait</th><th scope="col" title="Average time in the output queue (deq_timedelta); while a queue is starved, how long its head has waited">Queue delay</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -746,11 +747,11 @@ device-&gt;<span class="tok-f">SetCustomHeader</span>(h);</code></pre>
       <div>
         <p class="eyebrow">Next</p>
         <h2>Run it yourself</h2>
-        <p>Every walkthrough above maps to code and examples in the repository: <a href="https://github.com/HapCommSys/p4sim/blob/main/model/p4-switch-net-device.cc"><code>p4-switch-net-device.cc</code></a>, <a href="https://github.com/HapCommSys/p4sim/blob/main/model/p4-core-v1model.cc"><code>p4-core-v1model.cc</code></a>, <a href="https://github.com/HapCommSys/p4sim/blob/main/utils/p4-queue.h"><code>p4-queue.h</code></a>, <a href="https://github.com/HapCommSys/p4sim/blob/main/model/custom-p2p-net-device.cc"><code>custom-p2p-net-device.cc</code></a>, and the examples <code>p4-v1model-ipv4-forwarding</code>, <code>p4-queue-test</code> and <code>p4-basic-tunnel</code>.</p>
+        <p>Every walkthrough above maps to code and examples in the repository: <a href="https://github.com/HapCommSys/p4sim/blob/main/model/p4-switch-net-device.cc"><code>p4-switch-net-device.cc</code></a>, <a href="https://github.com/HapCommSys/p4sim/blob/main/model/p4-core-v1model.cc"><code>p4-core-v1model.cc</code></a>, <a href="https://github.com/HapCommSys/p4sim/blob/main/utils/p4-queue.h"><code>p4-queue.h</code></a>, <a href="https://github.com/HapCommSys/p4sim/blob/main/model/custom-p2p-net-device.cc"><code>custom-p2p-net-device.cc</code></a>, the description of the <a href="https://github.com/HapCommSys/p4sim/blob/main/doc/event-driven-tm-scheduler.md">event-driven egress</a>, and the examples <code>p4-v1model-ipv4-forwarding</code>, <code>p4-queue-test</code>, <code>p4-priority-queues</code> and <code>p4-basic-tunnel</code>.</p>
       </div>
       <div class="contribute card">
         <h3>Try P4sim</h3>
-        <p>Install it with ns-3.39 and run the examples.</p>
+        <p>Install it with ns-3.39 to ns-3.49 and run the examples.</p>
         <div class="cta cta-tight">
           <a class="btn btn-small btn-primary" href="../#start">Get started</a>
           <a class="btn btn-small" href="https://github.com/HapCommSys/p4sim">GitHub</a>
@@ -764,7 +765,7 @@ device-&gt;<span class="tok-f">SetCustomHeader</span>(h);</code></pre>
 
 <footer class="footer">
   <div class="wrap footer-inner">
-    <p>P4sim is open source under the <a href="https://github.com/HapCommSys/p4sim/blob/main/LICENSE">Apache License 2.0</a>. Developed at <a href="https://github.com/HapCommSys">HapCommSys</a>, TU Dresden.</p>
+    <p>P4sim is open source under the <a href="https://github.com/HapCommSys/p4sim/blob/main/LICENSE">Apache License 2.0</a>; some files are under <a href="https://github.com/HapCommSys/p4sim#license">GPL-2.0-only</a>. Developed at <a href="https://github.com/HapCommSys">HapCommSys</a>, TU Dresden.</p>
     <p><a href="../">P4sim overview</a> · <a href="../roadmap/">Roadmap</a> · <a href="/">Mingyu Ma's homepage</a></p>
   </div>
 </footer>
