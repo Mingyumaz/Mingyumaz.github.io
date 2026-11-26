@@ -126,6 +126,7 @@
             <li><strong>Transfer buffer</strong> (<code>TransferBufferSize</code>): the hardware port queue after the egress pipeline.</li>
             <li><strong>Digests in the simulation:</strong> a <code>Digest</code> trace source and a <code>P4Controller</code> callback; the example <code>p4-l2-learning</code> learns its tables from them.</li>
             <li><strong><code>P4Controller</code> on every architecture</strong>, through the new <code>P4RuntimeApi</code>; errors in a flow table are reported with file and line.</li>
+            <li><strong>PNA</strong> honours <code>PipelineDelay</code> and loads its flow table with <code>bm_CLI</code>; new examples <code>p4-priority-queues</code> and <code>p4-latency</code>.</li>
             <li><strong>Getting started:</strong> <code>install.sh</code> sets up everything in about 6 minutes on 16 cores; <code>p4-hello</code> and a getting-started guide; every example checks its own result.</li>
           </ul>
           <p class="release-links"><a href="https://github.com/HapCommSys/p4sim/compare/v2.0.0...main">Changes on main since v2.0.0</a></p>

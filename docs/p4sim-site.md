@@ -32,7 +32,7 @@ Redraws the queue parts of `/p4sim/inside/` for the event-driven egress of P4sim
 Brings the overview and the roadmap up to [release v2.0.0](https://github.com/HapCommSys/p4sim/releases/tag/v2.0.0) (2026-11-20) and to `main` at `488dd6b`. The site describes `main`, which is what `git clone` gives; the roadmap says what is released and what is only on `main`.
 
 - Overview:
-  - hero facts: ns-3.39 to 3.49, release v2.0.0;
+  - hero facts: ns-3.39 to 3.49 (main), release v2.0.0;
   - features: the pipeline core, the new controller features, a "Timing and queues" card instead of "Switch-level knobs";
   - how it works: event-driven egress; bridge ports and switched-Ethernet ports instead of "Arch 1 (main)" and "Arch 2 (switch_channel)"; `P4SwitchArch` 3 in the table;
   - get started: `install.sh`, Docker and `p4-hello`, as in the p4sim README; no `P4SIM_DIR`, no "Why ns-3.39?" note;
@@ -40,10 +40,10 @@ Brings the overview and the roadmap up to [release v2.0.0](https://github.com/Ha
   - examples: all 27, with their self-checks;
   - testing: 20 suites, grouped; the STF sample shows mirroring and registers; the scope list follows the README's known limitations;
   - roadmap cards: v1.0, v2.0, Next (on `main`), Later;
-  - people: GSoC 2025 and 2026 and the contributors of the release notes;
+  - people: GSoC 2025 and 2026 and the contributors of the release notes; the GSoC 2025 link points to `program/2025/README.md` (the old `2025/ideas_list.md` gave 404);
   - footer (all pages): some files are under GPL-2.0-only.
 - Roadmap: v1.1 and v1.2 are gone (their content shipped in 2.0, or is on `main`). v2.0 is released; "Next" lists what `main` has since v2.0.0; "Later" and "Ideas" come from `doc/TODO.md` and open pull request #102.
-- Inside the switch: a version note says that chapters 2 and 3 show the 1.x scheduler; chapter 1 calls its ports bridge ports. The chapters themselves are not redrawn yet (see [Open items](#open-items)).
+- Inside the switch: chapter 1 calls its ports bridge ports. A version note said that chapters 2 and 3 showed the 1.x scheduler, until the entry above redrew them.
 - The architecture figure is unchanged. It still names the branches `main` and `switch_channel`; the caption says so. p4sim pull request #85 redraws it.
 - `style.css`: `.split > * { min-width: 0; }`. The STF code block in "Testing" made the overview about 20 px wider than a 375 px phone screen (before this change too); now it scrolls inside its box.
 

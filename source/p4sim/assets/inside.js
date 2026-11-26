@@ -829,12 +829,13 @@
           await c.wait(900);
         }
       },
-      { // 08 SwitchRate 10 000 pps: the pipeline takes one packet per 100 µs
+      { // 08 SwitchRate 40 000 pps: the pipeline takes one packet per 25 µs; all three
+        // pass it before port 1 ends its frame, so the port rightly stays busy
         run: async function (c) {
-          var st = c.p.state, flows = [2, 3, 1], els = [], gap = 100;
+          var st = c.p.state, flows = [2, 3, 1], els = [], gap = 25;
           lit(c, ["q-ing"]);
           c.add("q-in", "on-amber");
-          c.text("q-inl", "pipeline: 1 per 100 µs");
+          c.text("q-inl", "pipeline: 1 per 25 µs");
           c.add("q-inl", "changed");
           await c.wait(500);
           var t0 = Math.max(st.t, st.busyFrom) + DT;
@@ -1337,6 +1338,7 @@
       h.push('<text x="' + CX0 + '" y="194">−10 s</text>');
       h.push('<text x="' + ((CX0 + CX1) / 2) + '" y="194" text-anchor="middle">−5 s</text>');
       h.push('<text x="' + CX1 + '" y="194" text-anchor="end">now</text>');
+      refLi.style.display = line > sc.max ? "none" : "";   // the legend names the line only when it is drawn
       if (line <= sc.max) {
         var yl = Y(line).toFixed(1);
         h.push('<line class="ref" x1="' + CX0 + '" x2="' + CX1 + '" y1="' + yl + '" y2="' + yl + '"/>');

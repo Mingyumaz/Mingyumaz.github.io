@@ -537,7 +537,7 @@
         </li>
         <li class="step-item">
           <button type="button" class="step-title"><span class="n">08</span>A slower pipeline</button>
-          <p><code>SwitchRate</code> (0 by default: no limit) models a slower switch, such as a software switch: the pipeline takes one packet per 1&#8202;/&#8202;<code>SwitchRate</code>. Packets that arrive meanwhile wait in the input buffer, in arrival order and without priorities, and are dropped when it is full (<code>InputBufferSizeLow</code>, 128 packets). Here <code>SwitchRate</code> is 10&#8239;000 packets per second, one per 100&#8239;µs.</p>
+          <p><code>SwitchRate</code> (0 by default: no limit) models a slower switch, such as a software switch: the pipeline takes one packet per 1&#8202;/&#8202;<code>SwitchRate</code>. Packets that arrive meanwhile wait in the input buffer, in arrival order and without priorities, and are dropped when it is full (<code>InputBufferSizeLow</code>, 128 packets). Here <code>SwitchRate</code> is 40&#8239;000 packets per second, one per 25&#8239;µs.</p>
         </li>
       </ol>
     </div>

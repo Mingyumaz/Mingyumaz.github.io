@@ -75,7 +75,7 @@
       </div>
       <ul class="facts" aria-label="Key facts">
         <li>Apache 2.0</li>
-        <li>ns-3.39 to 3.49</li>
+        <li>ns-3.39 to 3.49 (main)</li>
         <li>V1model · PSA · PNA</li>
         <li><a href="https://github.com/HapCommSys/p4sim/releases/tag/v2.0.0">Release v2.0.0</a></li>
         <li>ICNS3 2025</li>
@@ -174,7 +174,7 @@
       </article>
       <article class="card">
         <h3>ns-3 does the rest</h3>
-        <p>Topology, links, applications, pcap traces and logging come from <span class="nw">ns-3</span>, from ns-3.39 to ns-3.49. Combine P4 switches with any other <span class="nw">ns-3</span> module.</p>
+        <p>Topology, applications, pcap traces and logging come from <span class="nw">ns-3</span> (ns-3.39 to ns-3.49), and the links are <span class="nw">ns-3</span> channels. Combine P4 switches with any other <span class="nw">ns-3</span> module.</p>
       </article>
       <article class="card">
         <h3>Runtime control</h3>
@@ -269,7 +269,10 @@ docker run --rm p4sim ./ns3 run p4-v1model-ipv4-forwarding</code></pre>
       <li class="step">
         <div class="step-head"><span class="step-n">4</span><h3>Make it your own</h3></div>
         <p>The <a href="https://github.com/HapCommSys/p4sim/blob/main/doc/getting-started.md">getting-started guide</a> continues from here: change the flow table and the P4 program of <code>p4-hello</code>, then write your own.</p>
-<pre class="code"><code>./ns3 run <span class="tok-s">"p4-hello --json=my-switch/my.json --flowTable=my-switch/my.txt"</span></code></pre>
+<pre class="code"><code><span class="tok-k">mkdir</span> my-switch   <span class="tok-c"># copies, so that the originals stay as they are</span>
+<span class="tok-k">cp</span> contrib/p4sim/examples/p4src/hello/hello.json my-switch/my.json
+<span class="tok-k">cp</span> contrib/p4sim/examples/p4src/hello/flowtable.txt my-switch/my.txt
+./ns3 run <span class="tok-s">"p4-hello --json=my-switch/my.json --flowTable=my-switch/my.txt"</span></code></pre>
       </li>
     </ol>
 
@@ -356,10 +359,10 @@ NetDeviceContainer hostDevs = eth.<span class="tok-f">Install</span>(sw, hosts);
           <tr><td><code>P4SwitchArch</code></td><td>Architecture: 0 = V1model, 1 = PSA, 2 = PNA, 3 = pipeline core</td></tr>
           <tr><td><code>SwitchRate</code></td><td>V1model and PSA: packet rate of the whole P4 pipeline, in packets per second; <code>0</code> (default) = no limit</td></tr>
           <tr><td><code>PipelineDelay</code></td><td>Latency of every packet in the P4 pipeline; <code>0</code> (default) = none</td></tr>
-          <tr><td><code>InputBufferSizeLow</code></td><td>Input buffer for the packets received on the ports, in packets</td></tr>
+          <tr><td><code>InputBufferSizeLow</code></td><td>Input buffer for the packets received on the ports, in packets (PNA: 1024)</td></tr>
           <tr><td><code>InputBufferSizeHigh</code></td><td>V1model: input buffer for resubmitted and recirculated packets, served first</td></tr>
           <tr><td><code>QueueBufferSize</code></td><td>Each output queue, in packets: per port and priority (V1model, PSA) or per port (PNA)</td></tr>
-          <tr><td><code>TransferBufferSize</code></td><td>Frames a port holds after the egress pipeline, besides the one it sends; <code>0</code> (default) = none</td></tr>
+          <tr><td><code>TransferBufferSize</code></td><td>V1model and PSA: frames a port holds after the egress pipeline, besides the one it sends; <code>0</code> (default) = none; not with <code>EnableVoqFabric</code></td></tr>
           <tr><td><code>EnableVoqFabric</code></td><td>V1model: the traffic manager with virtual output queues and a fabric, instead of the output queues</td></tr>
           <tr><td><code>EnableSwap</code></td><td>Allow swapping the P4 program at run time; the swap waits until the switch holds no packet</td></tr>
           <tr><td><code>BmLogLevel</code></td><td>BMv2 pipeline log level, from <code>trace</code> to <code>off</code> (default); <code>trace</code> helps to debug a P4 program but slows the simulation down</td></tr>
@@ -376,7 +379,7 @@ NetDeviceContainer hostDevs = eth.<span class="tok-f">Install</span>(sw, hosts);
   <div class="wrap">
     <p class="eyebrow">Examples</p>
     <h2>27 examples that check themselves</h2>
-    <p class="section-lead">Each example is an <span class="nw">ns-3</span> script plus a folder in <code>examples/p4src/</code> with the P4 source, compiled JSON and flow tables. Run one with <code>./ns3 run &lt;name&gt;</code>: it prints <code>[PASS]</code> or <code>[FAIL]</code> and exits with 1 if a check fails, so <code>./test.py</code> runs them all as tests.</p>
+    <p class="section-lead">Each example is an <span class="nw">ns-3</span> script; those with a switch have a folder in <code>examples/p4src/</code> with the P4 source, compiled JSON and flow tables. Run one with <code>./ns3 run &lt;name&gt;</code>: it prints <code>[PASS]</code> or <code>[FAIL]</code> and exits with 1 if a check fails, so <code>./test.py</code> runs them all as tests.</p>
 
     <div class="filters" role="group" aria-label="Filter examples">
       <button type="button" class="chip" data-filter="all" aria-pressed="true">All</button>
@@ -655,7 +658,7 @@ NetDeviceContainer hostDevs = eth.<span class="tok-f">Install</span>(sw, hosts);
         <p class="eyebrow">People</p>
         <h2>Maintainers and contributors</h2>
         <p><strong>Maintainer:</strong> <a href="https://github.com/Mingyumaz">Mingyu Ma</a>, TU Dresden.</p>
-        <p><strong>Contributors:</strong> developed further in Google Summer of Code <a href="https://github.com/p4lang/gsoc/blob/main/2025/ideas_list.md#project-5">2025</a> and <a href="https://github.com/p4lang/gsoc/blob/main/program/2026/README.md">2026</a> with P4.org, mentored by Davide, with contributions from <a href="https://github.com/Vineet1101">Vineet Goel</a>, Md Tawsif Shahriar Dipto, Shashwat Patni, and <a href="https://github.com/HapCommSys/p4sim/graphs/contributors">everyone on GitHub</a>.</p>
+        <p><strong>Contributors:</strong> developed further in Google Summer of Code <a href="https://github.com/p4lang/gsoc/blob/main/program/2025/README.md">2025</a> and <a href="https://github.com/p4lang/gsoc/blob/main/program/2026/README.md">2026</a> with P4.org, mentored by Davide, with contributions from <a href="https://github.com/Vineet1101">Vineet Goel</a>, Md Tawsif Shahriar Dipto, Shashwat Patni, and <a href="https://github.com/HapCommSys/p4sim/graphs/contributors">everyone on GitHub</a>.</p>
       </div>
       <div class="contribute card">
         <h3>Contribute</h3>
