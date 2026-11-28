@@ -15,7 +15,7 @@ The P4sim project site is a hand-written static sub-site of this Hexo blog. This
 
 ### 2026-11-28 · P4sim 2.1
 
-Brings the overview and the roadmap up to [release v2.1.0](https://github.com/HapCommSys/p4sim/releases/tag/v2.1.0) (tag `b071e13`, 2026-11-28). `main` had nothing after the tag. The release notes, the README, `doc/examples.md`, `test/Readme.md` and `doc/TODO.md` of the tag are the sources.
+Brings the overview and the roadmap up to [release v2.1.0](https://github.com/HapCommSys/p4sim/releases/tag/v2.1.0) (published 2026-11-28, tag on `b071e13`). `main` had nothing after the tag. The release notes, the README, `doc/examples.md`, `test/Readme.md` and `doc/TODO.md` of the tag are the sources.
 
 - Overview:
   - hero facts: ns-3.39 to 3.49 (without "(main)": v2.1.0 supports both), release v2.1.0;
@@ -25,9 +25,9 @@ Brings the overview and the roadmap up to [release v2.1.0](https://github.com/Ha
   - examples: 32, new `p4-multicast`, `p4-psa-ecmp`, `p4-mri`, `p4-ecn` and `p4-psa-meter`;
   - testing: 21 suites with 167 cases, CI with ns-3.39 and ns-3.49, an "Externs" group (`p4-externs`), 154 of p4c's 221 BMv2 STF programs match BMv2; scope: PNA has no `recirculate()` or `mirror_packet()`, V1model direct meters count wall-clock time, target profiles are in review;
   - roadmap cards: v2.0, v2.1, Next (pull request #114), Later; v1.0 is on the roadmap page only, so that the grid keeps four cards.
-- Roadmap: a v2.1 card with the highlights, fixes and the changed interface of the release notes. "Next" is open p4sim pull request #114 (target profiles: per-packet latency, cut-through, learning tables), and links to `v2.1.0...main`. "Later" and "Ideas" come from `doc/TODO.md`: PSA externs shipped in 2.1 (#102) and left "Later"; cut-through and the timing per stage left "Ideas" for #114; new are V1model direct meters on simulation time, the PSA direct externs and the PNA `Counter` once p4c compiles them, and the smaller gaps of `doc/TODO.md`.
+- Roadmap: a v2.1 card with the highlights, fixes, documentation and license, and the changed interface of the release notes. "Next" is open p4sim pull request #114 (target profiles: per-packet latency, cut-through, learning tables), and links to `v2.1.0...main`. "Later" and "Ideas" come from `doc/TODO.md`: PSA externs shipped in 2.1 (#102) and left "Later"; cut-through and the timing per stage left "Ideas" for #114; new are V1model direct meters on simulation time, the PSA direct externs and the PNA `Counter` once p4c compiles them, and the smaller gaps of `doc/TODO.md`.
 - The attribute table and the code tabs were checked and are unchanged: the README's Switch Parameters, the lines of `p4-v1model-ipv4-forwarding.cc` shown in the tab and its flow table did not change between `488dd6b` and v2.1.0.
-- `style.css`: the colour stops of the roadmap's timeline line move to 60 / 70 / 84 %, so that the line stays green beside the released v2.1 card and turns amber at "Next" (the dots sit at about 36, 69, 83 and 92 % of the line, at 1280 and at 375 px). Move them again when a release is added.
+- `style.css`: the colour stops of the roadmap's timeline line move to 60 / 70 / 84 %, so that the line stays green beside the released v2.1 card and turns amber at "Next" (the dots of v2.1, Next, Later and Ideas sit at about 35, 70, 84 and 93 % of the line, at 1280 and at 375 px). Move them again when a release is added.
 - Inside the switch is unchanged.
 
 ### 2026-11-26 · Inside the switch for P4sim 2.0
@@ -306,7 +306,7 @@ Overview and roadmap (checked against v2.1.0, `b071e13`):
 
 | Fact on the site | Source in p4sim |
 |---|---|
-| Latest release v2.1.0; its highlights, fixes, changed interface; 21 suites with 167 cases (2.0: 18 with 113), 32 examples (2.0: 23); 154 of p4c's 221 BMv2 STF programs match BMv2 | GitHub release v2.1.0 (until it is published, the tag `v2.1.0` and `git log v2.0.0..v2.1.0`) |
+| Latest release v2.1.0; its highlights, fixes, changed interface; 21 suites with 167 cases (2.0: 18 with 113), 32 examples (2.0: 23); 154 of p4c's 221 BMv2 STF programs match BMv2 | GitHub release v2.1.0 (published 2026-11-28) |
 | Release v2.0.0 and its highlights, breaking changes, 18 suites (1.0: 6), 23 examples | GitHub release v2.0.0 |
 | ns-3.39 to ns-3.49, tested with ns-3.39 and ns-3.49 and BMv2 1.15.8; CI tests both | `README.md` (Installation), release v2.1.0 |
 | Installation: `install.sh` (about 6 minutes on 16 cores), Docker, step by step, VM; no `P4SIM_DIR` | `README.md`, `doc/installation.md` |

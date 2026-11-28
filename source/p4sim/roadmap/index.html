@@ -131,7 +131,8 @@
             <li><strong>Examples:</strong> 32 (2.0 had 23), and each checks its own result. New are <code>p4-hello</code>, the p4lang tutorials <code>ecn</code>, <code>mri</code> and <code>multicast</code>, a PSA policer, PSA ECMP, priority queues, L2 learning and <code>p4-latency</code>.</li>
             <li><strong>Tests:</strong> 21 test suites with 167 cases (2.0: 18 with 113). Of p4c's 221 BMv2 test programs, 154 give the same output on P4sim as on BMv2.</li>
             <li><strong>Fixes:</strong> three crashes found with p4c's test programs, the ingress port of hosts on switched-Ethernet ports, and a crash at the end of every simulation on Ubuntu 26.04.</li>
-            <li><strong>Changed interface:</strong> the runtime calls of <code>P4CoreV1model</code> moved to <code>P4RuntimeApi</code>, with the same names and arguments. Simulations that use <code>P4Controller</code>, the helpers or flow-table files need no change.</li>
+            <li><strong>Documentation and license:</strong> a new architecture figure in the README, which draw.io edits. P4sim's own code is Apache-2.0; files derived from <span class="nw">ns-3</span> and other GPL code stay GPL-2.0-only.</li>
+            <li><strong>Changed interface:</strong> the runtime calls of <code>P4CoreV1model</code> moved to <code>P4RuntimeApi</code>, with the same names and arguments. Simulations that use <code>P4Controller</code>, the helpers or flow-table files need no change. Results can differ from 2.0 where 2.0 was wrong or not reproducible: the ingress port of hosts on switched-Ethernet ports, meter colors and random numbers.</li>
           </ul>
           <p class="release-links"><a href="https://github.com/HapCommSys/p4sim/releases/tag/v2.1.0">Release v2.1.0</a> · <a href="https://github.com/HapCommSys/p4sim/compare/v2.0.0...v2.1.0">Changes since v2.0.0</a></p>
         </article>
