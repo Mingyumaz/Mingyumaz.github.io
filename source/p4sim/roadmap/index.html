@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Roadmap · P4sim</title>
-  <meta name="description" content="Where P4sim is heading: the releases of the ns-3 module for BMv2 P4 switches, from v1.0 and v2.0 to what is on main and planned.">
+  <meta name="description" content="Where P4sim is heading: the releases of the ns-3 module for BMv2 P4 switches, from v1.0 to v2.1, and what is in review and planned.">
   <meta name="author" content="Mingyu Ma">
   <link rel="canonical" href="https://mingyumaz.github.io/p4sim/roadmap/">
   <meta property="og:type" content="website">
@@ -112,24 +112,47 @@
         </article>
       </li>
 
+      <li class="release done" id="v2-1">
+        <span class="release-dot" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M3.5 8.5l3 3 6-7"/></svg></span>
+        <article class="release-card">
+          <div class="release-head">
+            <span class="release-ver">v2.1</span>
+            <span class="status st-done">Released</span>
+            <span class="release-when">November 2026</span>
+          </div>
+          <h2>Newer ns-3, externs and a control plane for every architecture</h2>
+          <ul>
+            <li><strong>ns-3.39 to ns-3.49</strong> from one code base, from C++17 to C++23; CI builds and tests ns-3.39 and ns-3.49. P4sim carries a fixed copy of BMv2's spdlog headers, so no manual patch is needed.</li>
+            <li><strong>PSA and PNA externs:</strong> <code>Counter</code>, <code>Meter</code>, <code>Hash</code>, <code>InternetChecksum</code> and <code>Random</code>. Before, a program that used one of them failed to load.</li>
+            <li><strong>Control plane on every architecture:</strong> the new <code>P4RuntimeApi</code> makes the BMv2 runtime calls, and <code>P4Controller</code> works on V1model, PSA and PNA switches. <code>digest()</code> records reach the simulation through the <code>Digest</code> trace source and a <code>P4Controller</code> callback; <code>p4-l2-learning</code> learns from them.</li>
+            <li><strong>Transfer buffer</strong> (<code>TransferBufferSize</code>, V1model and PSA): the hardware port queue after the egress pipeline. The default, 0, keeps the 2.0 behaviour.</li>
+            <li><strong>Reproducible runs:</strong> <code>meter.execute_meter()</code> and the PSA and PNA <code>Meter</code> count simulation time instead of the wall clock; <code>random()</code> and the PSA <code>Random</code> draw from an engine per switch, seeded from the <span class="nw">ns-3</span> seed and run number.</li>
+            <li><strong>Getting started:</strong> <code>install.sh</code> sets up everything on Ubuntu 24.04 or 26.04 in about 6 minutes on 16 cores; <code>p4-hello</code> and a getting-started guide.</li>
+            <li><strong>Examples:</strong> 32 (2.0 had 23), and each checks its own result. New are <code>p4-hello</code>, the p4lang tutorials <code>ecn</code>, <code>mri</code> and <code>multicast</code>, a PSA policer, PSA ECMP, priority queues, L2 learning and <code>p4-latency</code>.</li>
+            <li><strong>Tests:</strong> 21 test suites with 167 cases (2.0: 18 with 113). Of p4c's 221 BMv2 test programs, 154 give the same output on P4sim as on BMv2.</li>
+            <li><strong>Fixes:</strong> three crashes found with p4c's test programs, the ingress port of hosts on switched-Ethernet ports, and a crash at the end of every simulation on Ubuntu 26.04.</li>
+            <li><strong>Changed interface:</strong> the runtime calls of <code>P4CoreV1model</code> moved to <code>P4RuntimeApi</code>, with the same names and arguments. Simulations that use <code>P4Controller</code>, the helpers or flow-table files need no change.</li>
+          </ul>
+          <p class="release-links"><a href="https://github.com/HapCommSys/p4sim/releases/tag/v2.1.0">Release v2.1.0</a> · <a href="https://github.com/HapCommSys/p4sim/compare/v2.0.0...v2.1.0">Changes since v2.0.0</a></p>
+        </article>
+      </li>
+
       <li class="release progress" id="next">
         <span class="release-dot" aria-hidden="true"></span>
         <article class="release-card">
           <div class="release-head">
             <span class="release-ver">Next</span>
             <span class="status st-progress">In progress</span>
-            <span class="release-when">on main</span>
+            <span class="release-when">in review</span>
           </div>
-          <h2>Newer ns-3 and a fuller control plane</h2>
+          <h2>Target profiles: the latency of real switches</h2>
           <ul>
-            <li><strong>ns-3.39 to ns-3.49</strong> from one code base, tested with ns-3.39 and ns-3.49. P4sim builds with a fixed copy of BMv2's spdlog headers, so no manual patch is needed.</li>
-            <li><strong>Transfer buffer</strong> (<code>TransferBufferSize</code>): the hardware port queue after the egress pipeline.</li>
-            <li><strong>Digests in the simulation:</strong> a <code>Digest</code> trace source and a <code>P4Controller</code> callback; the example <code>p4-l2-learning</code> learns its tables from them.</li>
-            <li><strong><code>P4Controller</code> on every architecture</strong>, through the new <code>P4RuntimeApi</code>; errors in a flow table are reported with file and line.</li>
-            <li><strong>PNA</strong> honours <code>PipelineDelay</code> and loads its flow table with <code>bm_CLI</code>; new examples <code>p4-priority-queues</code> and <code>p4-latency</code>.</li>
-            <li><strong>Getting started:</strong> <code>install.sh</code> sets up everything in about 6 minutes on 16 cores; <code>p4-hello</code> and a getting-started guide; every example checks its own result.</li>
+            <li><strong>Target profiles</strong> (<code>TargetProfile</code>): JSON files that give a switch the timing of a real target, kept apart from the P4 program. Without a profile nothing changes.</li>
+            <li><strong><code>tofino-like</code>:</strong> a per-packet latency that depends on the headers a packet parses and the tables it matches (Franco et al., 2024), plus the MAC and egress delays (DPTP, SOSR 2019).</li>
+            <li><strong><code>cut-through-reference</code>:</strong> a cut-through switch without buffers, which starts to send a frame before its last bit has arrived.</li>
+            <li><strong>Learning tables</strong> filled from the program's digests, with a capacity, replacement of the oldest entry and aging, learned in the data plane or through the control plane with a delay.</li>
           </ul>
-          <p class="release-links"><a href="https://github.com/HapCommSys/p4sim/compare/v2.0.0...main">Changes on main since v2.0.0</a></p>
+          <p class="release-links"><a href="https://github.com/HapCommSys/p4sim/pull/114">Pull request #114</a> · <a href="https://github.com/HapCommSys/p4sim/compare/v2.1.0...main">Changes on main since v2.1.0</a></p>
         </article>
       </li>
 
@@ -142,8 +165,8 @@
           </div>
           <h2>Closing the gaps</h2>
           <ul>
-            <li><strong>PSA externs</strong> for PSA and PNA programs (<a href="https://github.com/HapCommSys/p4sim/pull/102">pull request #102</a>, in review).</li>
             <li><strong>Pipeline core:</strong> multicast, clones, resubmit and recirculation, with the packet replication engine of V1model.</li>
+            <li><strong>Direct meters</strong> of V1model on simulation time; BMv2 runs them with the wall clock.</li>
             <li><strong>BMv2:</strong> fixes for upstream, an optimised build, and finding BMv2 through CMake.</li>
           </ul>
         </article>
@@ -158,9 +181,9 @@
           </div>
           <h2>Under consideration</h2>
           <ul>
-            <li>Cut-through forwarding, which changes the latency but not the throughput.</li>
-            <li>A timing model per pipeline stage.</li>
             <li>A default size for the transfer buffer, and the transfer buffer with the VOQ traffic manager.</li>
+            <li>PSA <code>DirectCounter</code> and <code>DirectMeter</code>, and a <code>Counter</code> in PNA programs, once p4c compiles them for BMv2.</li>
+            <li>A drop port that can be set, and a mirroring session with both a port and a multicast group.</li>
           </ul>
           <p class="release-links"><a href="https://github.com/HapCommSys/p4sim/blob/main/doc/TODO.md">Open items in doc/TODO.md</a></p>
         </article>
