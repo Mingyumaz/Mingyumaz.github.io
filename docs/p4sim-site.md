@@ -9,9 +9,26 @@ The P4sim project site is a hand-written static sub-site of this Hexo blog. This
 | Source | [`source/p4sim/`](../source/p4sim/) in this repository |
 | Generator | Hexo 8.1.2 with the Fluid theme; `source/p4sim/**` is copied as is (`skip_render`) |
 | Publishing | [`.github/workflows/pages.yml`](../.github/workflows/pages.yml), on every push to `main` |
-| Project | [HapCommSys/p4sim](https://github.com/HapCommSys/p4sim); site facts last checked against release v2.0.0 and `main` at `488dd6b` |
+| Project | [HapCommSys/p4sim](https://github.com/HapCommSys/p4sim); overview and roadmap last checked against release v2.1.0 (`b071e13`, also `main` on 2026-11-28) |
 
 ## Change log
+
+### 2026-11-28 · P4sim 2.1
+
+Brings the overview and the roadmap up to [release v2.1.0](https://github.com/HapCommSys/p4sim/releases/tag/v2.1.0) (published 2026-11-28, tag on `b071e13`). `main` had nothing after the tag. The release notes, the README, `doc/examples.md`, `test/Readme.md` and `doc/TODO.md` of the tag are the sources.
+
+- Overview:
+  - hero facts: ns-3.39 to 3.49 (without "(main)": v2.1.0 supports both), release v2.1.0;
+  - features: ten examples follow the p4lang tutorials (with a link to `doc/tutorials.md`); the PSA and PNA externs; `P4Controller` on V1model, PSA and PNA; reproducible random numbers and meters;
+  - how it works: the control-plane paragraph names the Thrift server and `P4RuntimeApi`, as the figure does; the port cards follow the README's "Architectural Overview": switched-Ethernet ports first, "recommended", closer to a real port; bridge ports connect most easily to other ns-3 modules;
+  - architecture figure: P4sim's `doc/figures/p4sim-architecture.drawio.svg` (from p4sim #85) replaces `p4sim-arch.png`, with a new alt text and caption; the note on the old branch names is gone. `og:image` points to a PNG export of it, since link previews need a raster image;
+  - examples: 32, new `p4-multicast`, `p4-psa-ecmp`, `p4-mri`, `p4-ecn` and `p4-psa-meter`;
+  - testing: 21 suites with 167 cases, CI with ns-3.39 and ns-3.49, an "Externs" group (`p4-externs`), 154 of p4c's 221 BMv2 STF programs match BMv2; scope: PNA has no `recirculate()` or `mirror_packet()`, V1model direct meters count wall-clock time, target profiles are in review;
+  - roadmap cards: v2.0, v2.1, Next (pull request #114), Later; v1.0 is on the roadmap page only, so that the grid keeps four cards.
+- Roadmap: a v2.1 card with the highlights, fixes, documentation and license, and the changed interface of the release notes. "Next" is open p4sim pull request #114 (target profiles: per-packet latency, cut-through, learning tables), and links to `v2.1.0...main`. "Later" and "Ideas" come from `doc/TODO.md`: PSA externs shipped in 2.1 (#102) and left "Later"; cut-through and the timing per stage left "Ideas" for #114; new are V1model direct meters on simulation time, the PSA direct externs and the PNA `Counter` once p4c compiles them, and the smaller gaps of `doc/TODO.md`.
+- The attribute table and the code tabs were checked and are unchanged: the README's Switch Parameters, the lines of `p4-v1model-ipv4-forwarding.cc` shown in the tab and its flow table did not change between `488dd6b` and v2.1.0.
+- `style.css`: the colour stops of the roadmap's timeline line move to 60 / 70 / 84 %, so that the line stays green beside the released v2.1 card and turns amber at "Next" (the dots of v2.1, Next, Later and Ideas sit at about 35, 70, 84 and 93 % of the line, at 1280 and at 375 px). Move them again when a release is added.
+- Inside the switch is unchanged.
 
 ### 2026-11-26 · Inside the switch for P4sim 2.0
 
@@ -117,7 +134,8 @@ source/p4sim/
     ├── main.js           theme toggle, copy buttons on code blocks, tabs
     ├── inside.css        stage, player controls, chapter-specific marks, queue model
     ├── inside.js         step player engine, the four chapters, the queue model
-    ├── p4sim-arch.png    architecture figure on the overview
+    ├── p4sim-architecture.drawio.svg   architecture figure on the overview, a copy of P4sim's
+    ├── p4sim-architecture.png          PNG export of it, for og:image
     └── favicon.svg
 ```
 
@@ -284,18 +302,22 @@ Expected results of the presets, useful as a regression check after edits. Measu
 
 The pages state these facts. When P4sim changes, check them and update the pages and this list.
 
-Overview and roadmap (checked against v2.0.0 and `main` at `488dd6b`):
+Overview and roadmap (checked against v2.1.0, `b071e13`):
 
 | Fact on the site | Source in p4sim |
 |---|---|
-| Latest release v2.0.0; its highlights, breaking changes, 18 suites (1.0: 6), 23 examples | GitHub release v2.0.0 |
-| ns-3.39 to ns-3.49, tested with ns-3.39 and ns-3.49 and BMv2 1.15.8 (on `main`, not in v2.0.0) | `README.md` (Installation) |
+| Latest release v2.1.0; its highlights, fixes, changed interface; 21 suites with 167 cases (2.0: 18 with 113), 32 examples (2.0: 23); 154 of p4c's 221 BMv2 STF programs match BMv2 | GitHub release v2.1.0 (published 2026-11-28) |
+| Release v2.0.0 and its highlights, breaking changes, 18 suites (1.0: 6), 23 examples | GitHub release v2.0.0 |
+| ns-3.39 to ns-3.49, tested with ns-3.39 and ns-3.49 and BMv2 1.15.8; CI tests both | `README.md` (Installation), release v2.1.0 |
 | Installation: `install.sh` (about 6 minutes on 16 cores), Docker, step by step, VM; no `P4SIM_DIR` | `README.md`, `doc/installation.md` |
+| Two kinds of port: switched-Ethernet ports recommended and closer to a real port; bridge ports connect most easily to other ns-3 modules | `README.md` (Architectural Overview, Switch ports) |
+| Architecture figure: `assets/p4sim-architecture.drawio.svg` is a byte-for-byte copy of P4sim's; the PNG is its draw.io export (`draw.io --export --format png --scale 2 --border 10`, 2408 × 1482) | `doc/figures/p4sim-architecture.drawio.svg` |
+| PSA and PNA externs `Counter`, `Meter`, `Hash`, `InternetChecksum`, `Random`; `P4Controller` on V1model, PSA and PNA; random numbers and meters on the ns-3 seed and clock, V1model direct meters on the wall clock | `README.md` (Key Features, Known Limitations), release v2.1.0 |
 | Attributes and defaults: `SwitchRate` 0, `PipelineDelay` 0, `TransferBufferSize` 0, buffers 128, `BmLogLevel` `off`, `ThriftPort` 0 | `model/p4-switch-net-device.cc`, `README.md` (Switch Parameters) |
 | `P4SwitchArch` 0–3; the pipeline core has no output queue and no packet replication | `README.md` (Supported P4 Architectures) |
-| 27 examples and their descriptions | `doc/examples.md`, `test/examples-to-run.py` |
-| 20 test suites and what they check | `test/Readme.md` |
-| Roadmap "Next" = commits in `v2.0.0..main`; "Later" and "Ideas" | `git log v2.0.0..main`, `doc/TODO.md`, open p4sim pull requests |
+| 32 examples and their descriptions; ten follow the p4lang tutorials | `doc/examples.md`, `doc/tutorials.md`, `test/examples-to-run.py` |
+| 21 test suites with 167 cases and what they check | `test/Readme.md` |
+| Roadmap "Next" = open p4sim pull requests (#114) and commits in `v2.1.0..main`; "Later" and "Ideas" | open p4sim pull requests, `git log v2.1.0..main`, `doc/TODO.md` |
 
 Inside the switch (chapters 2 and 3 checked against `main` at `488dd6b`, chapters 1 and 4 against `4f43a3f`):
 
@@ -315,7 +337,6 @@ Inside the switch (chapters 2 and 3 checked against `main` at `488dd6b`, chapter
 
 ## Open items
 
-- **Architecture figure**: replace `assets/p4sim-arch.png` when p4sim pull request #85 merges.
 - **Old blog repository**: archive `Mingyumaz/Hexo-Blog`, delete its `GH_TOKEN` and `GH_USERNAME` secrets, and revoke that personal access token. It is no longer used.
 - **Optional**: a short explainer video built from the animations (deferred).
 - **Questions for the P4sim code** (found while writing the page; they are not website bugs):
